@@ -10,7 +10,7 @@ import { PrismaClient } from '@prisma/client'
 import { PrismaPg } from '@prisma/adapter-pg'
 import { computeAllScores } from '../lib/scoring'
 import { selectInterviewQuestions } from '../lib/report/questions'
-import { buildReportSections, type NarrativeRow } from '../lib/report/narrative'
+import { buildReportSections, type NarrativeRow, DIMS, DIM_LABELS } from '../lib/report/narrative'
 import type { BlockResponseInput, LexiconEntry } from '../lib/scoring/types'
 
 const connectionString =
@@ -21,15 +21,8 @@ const prisma = new PrismaClient({ adapter })
 // ─── Test data ───────────────────────────────────────────────────────────────
 
 const CANDIDATE_NAME = 'Ana Martínez'
-const POSITION_NAME = 'Gerente de Ventas'
-
-// Ideal profile for "Gerente de Ventas"
-const IDEAL = { D: 80, I: 70, S: 40, C: 50 }
 
 // Bloque 1 — 6 groups (Perfil Percibido)
-// G1(most=D,least=S), G2(most=D,least=C), G3(most=D,least=S),
-// G4(most=I,least=C), G5(most=D,least=S), G6(most=D,least=C)
-// PP = { D:91.67, I:58.33, S:25, C:25 }
 const B1: BlockResponseInput[] = [
   { groupNumber: 1, mostDim: 'D', leastDim: 'S', isControl: false },
   { groupNumber: 2, mostDim: 'D', leastDim: 'C', isControl: false },
@@ -40,9 +33,6 @@ const B1: BlockResponseInput[] = [
 ]
 
 // Bloque 2 — 7 groups (Perfil Interno + control)
-// G1-G3(most=D,least=S), G4(most=D,least=C), G5(most=D,least=S), G6(most=D,least=C)
-// G7 control (most=D,least=S) — same as G1 → 0 contradictions
-// PI = { D:100, I:50, S:16.67, C:33.33 }
 const B2: BlockResponseInput[] = [
   { groupNumber: 1, mostDim: 'D', leastDim: 'S', isControl: false },
   { groupNumber: 2, mostDim: 'D', leastDim: 'S', isControl: false },
@@ -53,9 +43,6 @@ const B2: BlockResponseInput[] = [
   { groupNumber: 7, mostDim: 'D', leastDim: 'S', isControl: true },
 ]
 
-// Bloque 3 — free text (73 words, D-dominant)
-// D terms: decidida(3)+directa(3)+competitiva(3)+exigente(2)+firme(2)+audaz(2)+autoridad(2)+resultado(2)+impaciente(1)+urgencia(1)+independiente(1) = 22
-// PT.D = 22/28*100 = 78.57; PT.I=PT.S=PT.C=0
 const B3_TEXT =
   'Me considero una persona decidida y directa en mi forma de actuar. ' +
   'Soy competitiva por naturaleza y exigente en lo que hago. ' +
@@ -63,18 +50,15 @@ const B3_TEXT =
   'Valoro la autoridad y el resultado de cada proyecto como mis principales referentes de desempeño. ' +
   'Puedo ser impaciente ante la urgencia, pero eso me mantiene independiente y capaz de tomar decisiones con claridad y rapidez sin depender de consensos innecesarios.'
 
-// Duration: 8 minutes (no time penalty)
 const DURATION_SECONDS = 480
 
 // ─── Main ─────────────────────────────────────────────────────────────────────
 
 async function main() {
   console.log('='.repeat(70))
-  console.log('E2E INFORME DE PERFIL CONDUCTUAL')
+  console.log('E2E INFORME DE PERFIL CONDUCTUAL (Sin Cargo)')
   console.log('='.repeat(70))
   console.log(`Candidato: ${CANDIDATE_NAME}`)
-  console.log(`Cargo: ${POSITION_NAME}`)
-  console.log(`Perfil ideal: D=${IDEAL.D} I=${IDEAL.I} S=${IDEAL.S} C=${IDEAL.C}`)
   console.log()
 
   // Load lexicon from DB
@@ -86,25 +70,14 @@ async function main() {
   }))
   console.log(`Léxico cargado: ${lexicon.length} términos activos`)
 
-  // Denominators
-  const dims = ['D', 'I', 'S', 'C'] as const
-  for (const dim of dims) {
-    const denom = lexicon.filter(e => e.dimension === dim).reduce((s, e) => s + e.weight, 0)
-    console.log(`  Denominador ${dim}: ${denom}`)
-  }
-  console.log()
-
-  // Scoring
-  const scores = computeAllScores(
-    {
-      block1Responses: B1,
-      block2Responses: B2,
-      block3Text: B3_TEXT,
-      durationSeconds: DURATION_SECONDS,
-      lexicon,
-    },
-    IDEAL,
-  )
+  // Scoring (no ideal)
+  const scores = computeAllScores({
+    block1Responses: B1,
+    block2Responses: B2,
+    block3Text: B3_TEXT,
+    durationSeconds: DURATION_SECONDS,
+    lexicon,
+  })
 
   // Print scores
   console.log('─'.repeat(70))
@@ -122,17 +95,6 @@ async function main() {
   console.log(`Índice de Máscara Social: ${fmt(scores.maskIndex)}%`)
   console.log(`Índice de Consistencia: ${fmt(scores.consistencyIndex)} (${scores.consistencyLevel})`)
   console.log(`Contradicciones: ${scores.contradictions}`)
-  console.log(`Ajuste al Cargo (fitScore): ${fmt(scores.fitScore)}%`)
-  console.log(`Proyección de Desempeño: ${fmt(scores.projectionScore)}`)
-  console.log(`Nivel de Riesgo: ${scores.riskLevel}`)
-  console.log()
-
-  // Gaps
-  console.log('Brechas (PC − Ideal):')
-  for (const dim of dims) {
-    const gap = scores.pc[dim] - IDEAL[dim]
-    console.log(`  ${dim}: ${gap > 0 ? '+' : ''}${fmt(gap)} pts`)
-  }
   console.log()
 
   // Load narrative content
@@ -150,21 +112,18 @@ async function main() {
   console.log(`Contenido narrativo cargado: ${rows.length} filas`)
   console.log()
 
-  // Select interview questions
-  const interviewQuestions = selectInterviewQuestions(rows, scores.pc, IDEAL)
+  // Select interview questions (distance to center)
+  const interviewQuestions = selectInterviewQuestions(rows, scores.pc)
 
-  // Build sections
+  // Build sections (new signature — no ideal, no fit/projection/risk)
   const sections = buildReportSections(
     rows,
     scores.pc,
-    IDEAL,
-    scores.fitScore,
     scores.maskIndex,
     scores.consistencyLevel,
-    scores.riskLevel,
-    interviewQuestions,
     CANDIDATE_NAME,
   )
+  sections.interviewQuestions = interviewQuestions
 
   // Print full report
   console.log('='.repeat(70))
@@ -185,23 +144,21 @@ async function main() {
 
   console.log('\n3. PERFIL COMPUESTO (ver gráfico de barras en PDF)')
   console.log('-'.repeat(40))
-  for (const dim of dims) {
-    const label = { D: 'Iniciativa', I: 'Vínculo', S: 'Cadencia', C: 'Precisión' }[dim]
-    console.log(`  ${label}: ${Math.round(scores.pc[dim])}`)
+  for (const dim of DIMS) {
+    console.log(`  ${DIM_LABELS[dim]}: ${Math.round(scores.pc[dim])}`)
   }
 
-  console.log('\n4. COMPARACIÓN CON PERFIL IDEAL (ver gráfico radar en PDF)')
+  console.log('\n4. PERFIL INTERNO VS PERCIBIDO (ver gráfico radar en PDF)')
   console.log('-'.repeat(40))
-  for (const dim of dims) {
-    const label = { D: 'Iniciativa', I: 'Vínculo', S: 'Cadencia', C: 'Precisión' }[dim]
-    console.log(`  ${label}: PC=${Math.round(scores.pc[dim])} vs Ideal=${IDEAL[dim]}`)
+  for (const dim of DIMS) {
+    console.log(`  ${DIM_LABELS[dim]}: PP=${Math.round(scores.pp[dim])} PI=${Math.round(scores.pi[dim])}`)
   }
 
-  console.log('\n5. ANÁLISIS DE BRECHA')
+  console.log('\n5. ANÁLISIS DE RASGOS DOMINANTES')
   console.log('-'.repeat(40))
-  for (const g of sections.gapAnalysis) {
-    console.log(`[${g.label} ${g.gap > 0 ? '+' : ''}${Math.round(g.gap)} pts]`)
-    console.log(g.text)
+  for (const t of sections.dominantTraits) {
+    console.log(`[${t.label} ${Math.round(t.distance)} pts ${t.direction}]`)
+    console.log(t.text)
     console.log()
   }
 
@@ -221,26 +178,25 @@ async function main() {
   console.log('-'.repeat(40))
   console.log(sections.alerts)
 
-  console.log('\n10. PREGUNTAS SUGERIDAS DE ENTREVISTA')
+  console.log('\n10. PREGUNTAS DE PROFUNDIZACIÓN')
   console.log('-'.repeat(40))
   console.log(`Total: ${sections.interviewQuestions.length} preguntas`)
   sections.interviewQuestions.forEach((q, i) => {
     console.log(`${i + 1}. ${q}`)
   })
 
-  console.log('\n11. PROYECCIÓN DE DESEMPEÑO')
+  console.log('\n11. POTENCIAL Y RECOMENDACIONES DE DESARROLLO')
   console.log('-'.repeat(40))
-  console.log(sections.projection)
+  console.log(sections.potential)
 
   console.log('\n12. NOTA DE USO')
   console.log('-'.repeat(40))
   console.log(
-    'Este informe es una herramienta de apoyo para el proceso de selección de personal ' +
-    'y no constituye, por sí solo, el criterio de decisión. El instrumento está basado ' +
+    'Este informe describe el estilo conductual de la persona evaluada y no mide habilidades, ' +
+    'conocimientos ni garantiza desempeño en ningún contexto específico. El instrumento está basado ' +
     'en la teoría pública DISC (Marston, 1928) y representa una arquitectura de trabajo ' +
-    'no validada psicométricamente. Los resultados deben interpretarse en conjunto con ' +
-    'entrevistas, verificación de referencias y otras fuentes de información. Toda ' +
-    'decisión de contratación es responsabilidad exclusiva del consultor y de la organización.',
+    'no validada psicométricamente. Los resultados deben interpretarse como orientación y ' +
+    'complementarse con otras fuentes de información.',
   )
 
   console.log('\n' + '='.repeat(70))
