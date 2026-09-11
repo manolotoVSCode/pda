@@ -47,7 +47,7 @@ export function buildBarChartSvg(pc: DimensionVector): string {
 </svg>`
 }
 
-export function buildRadarChartSvg(pc: DimensionVector, ideal: DimensionVector): string {
+export function buildRadarChartSvg(pp: DimensionVector, pi: DimensionVector): string {
   const SIZE = 300
   const CX = SIZE / 2
   const CY = SIZE / 2
@@ -63,9 +63,9 @@ export function buildRadarChartSvg(pc: DimensionVector, ideal: DimensionVector):
     ]
   }
 
-  function polygon(vectors: DimensionVector): string {
+  function polygon(vec: DimensionVector): string {
     return DIMS.map((dim, i) => {
-      const [x, y] = pt(i, vectors[dim])
+      const [x, y] = pt(i, vec[dim])
       return `${i === 0 ? 'M' : 'L'}${x.toFixed(2)},${y.toFixed(2)}`
     }).join(' ') + ' Z'
   }
@@ -80,10 +80,7 @@ export function buildRadarChartSvg(pc: DimensionVector, ideal: DimensionVector):
   }).join('\n')
 
   const labelOffsets: Record<Dimension, [number, number]> = {
-    D: [0, -14],
-    I: [14, 0],
-    S: [0, 14],
-    C: [-14, 0],
+    D: [0, -14], I: [14, 0], S: [0, 14], C: [-14, 0],
   }
   const dimLabels = DIMS.map((dim, i) => {
     const [x, y] = pt(i, 115)
@@ -94,12 +91,12 @@ export function buildRadarChartSvg(pc: DimensionVector, ideal: DimensionVector):
   return `<svg xmlns="http://www.w3.org/2000/svg" width="${SIZE}" height="${SIZE}" viewBox="0 0 ${SIZE} ${SIZE}">
   ${gridLines}
   ${axisLines}
-  <path d="${polygon(ideal)}" fill="rgba(74,127,191,0.15)" stroke="#4a7fbf" stroke-width="1.5" stroke-dasharray="5,3"/>
-  <path d="${polygon(pc)}" fill="rgba(224,92,58,0.15)" stroke="#e05c3a" stroke-width="2"/>
+  <path d="${polygon(pi)}" fill="rgba(74,127,191,0.15)" stroke="#4a7fbf" stroke-width="1.5" stroke-dasharray="5,3"/>
+  <path d="${polygon(pp)}" fill="rgba(224,92,58,0.15)" stroke="#e05c3a" stroke-width="2"/>
   ${dimLabels}
-  <circle cx="${CX - 60}" cy="${SIZE - 18}" r="5" fill="#e05c3a"/>
-  <text x="${CX - 52}" y="${SIZE - 14}" font-family="sans-serif" font-size="10" fill="#333">Perfil Compuesto</text>
-  <circle cx="${CX + 35}" cy="${SIZE - 18}" r="5" fill="#4a7fbf"/>
-  <text x="${CX + 43}" y="${SIZE - 14}" font-family="sans-serif" font-size="10" fill="#333">Perfil Ideal</text>
+  <circle cx="${CX - 70}" cy="${SIZE - 18}" r="5" fill="#e05c3a"/>
+  <text x="${CX - 62}" y="${SIZE - 14}" font-family="sans-serif" font-size="10" fill="#333">Perfil Percibido</text>
+  <circle cx="${CX + 30}" cy="${SIZE - 18}" r="5" fill="#4a7fbf"/>
+  <text x="${CX + 38}" y="${SIZE - 14}" font-family="sans-serif" font-size="10" fill="#333">Perfil Interno</text>
 </svg>`
 }
