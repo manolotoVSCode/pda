@@ -23,7 +23,6 @@ export async function GET(
       assessment: {
         include: {
           candidate: true,
-          position: true,
         },
       },
     },
@@ -34,12 +33,6 @@ export async function GET(
   const pc = { D: report.pcD, I: report.pcI, S: report.pcS, C: report.pcC }
   const pp = { D: report.ppD, I: report.ppI, S: report.ppS, C: report.ppC }
   const pi = { D: report.piD, I: report.piI, S: report.piS, C: report.piC }
-  const ideal = {
-    D: report.assessment.position.idealD,
-    I: report.assessment.position.idealI,
-    S: report.assessment.position.idealS,
-    C: report.assessment.position.idealC,
-  }
 
   const narrativeRows = await db.narrativeContent.findMany()
   const rows: NarrativeRow[] = narrativeRows.map(r => ({
@@ -53,48 +46,45 @@ export async function GET(
     content: r.content,
   }))
 
-  const interviewQuestions = selectInterviewQuestions(rows, pc, ideal)
+  const candidateName = report.assessment.candidate
+    ? [report.assessment.candidate.name, report.assessment.candidate.lastName].filter(Boolean).join(' ')
+    : 'Sin nombre'
+
+  const interviewQuestions = selectInterviewQuestions(rows, pc)
 
   const sections = buildReportSections(
     rows,
     pc,
-    ideal,
-    report.fitScore,
     report.maskIndex,
     report.consistencyLevel as 'HIGH' | 'MODERATE' | 'LOW',
-    report.riskLevel as 'LOW' | 'MEDIUM' | 'HIGH',
-    interviewQuestions,
-    report.assessment.candidate.name,
+    candidateName,
   )
+  sections.interviewQuestions = interviewQuestions
 
   const barChartSvg = buildBarChartSvg(pc)
-  const radarChartSvg = buildRadarChartSvg(pc, ideal)
+  const radarChartSvg = buildRadarChartSvg(pp, pi)
 
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const buffer = await renderToBuffer(
     React.createElement(ReportDocument, {
-      candidateName: report.assessment.candidate.name,
-      positionName: report.assessment.position.name,
+      candidateName,
       generatedAt: report.generatedAt,
       sections,
       pc, pp, pi,
       maskIndex: report.maskIndex,
       consistencyIndex: report.consistencyIndex,
       consistencyLevel: report.consistencyLevel as 'HIGH' | 'MODERATE' | 'LOW',
-      fitScore: report.fitScore,
-      projectionScore: report.projectionScore,
-      riskLevel: report.riskLevel as 'LOW' | 'MEDIUM' | 'HIGH',
       barChartSvg,
       radarChartSvg,
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     }) as any,
   )
 
-  const candidateName = report.assessment.candidate.name.replace(/\s+/g, '_')
+  const safeName = candidateName.replace(/\s+/g, '_')
   return new NextResponse(new Uint8Array(buffer), {
     headers: {
       'Content-Type': 'application/pdf',
-      'Content-Disposition': `attachment; filename="informe_${candidateName}.pdf"`,
+      'Content-Disposition': `attachment; filename="informe_${safeName}.pdf"`,
     },
   })
 }
