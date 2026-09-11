@@ -8,47 +8,34 @@ const TIE_ORDER: Dimension[] = ['D', 'I', 'S', 'C']
 export function selectInterviewQuestions(
   rows: NarrativeRow[],
   pc: DimensionVector,
-  ideal: DimensionVector,
 ): string[] {
-  const gaps = TIE_ORDER.map(dim => ({
-    dim,
-    gap: pc[dim] - ideal[dim],
-    absGap: Math.abs(pc[dim] - ideal[dim]),
-  }))
+  const ranked = TIE_ORDER
+    .map(dim => ({
+      dim,
+      distance: Math.abs(pc[dim] - 50),
+      direction: pc[dim] >= 50 ? 'excess' : 'deficit',
+    }))
+    .sort((a, b) => {
+      const diff = b.distance - a.distance
+      // Epsilon guard against float noise; tie broken by TIE_ORDER
+      if (Math.abs(diff) > 0.01) return diff
+      return TIE_ORDER.indexOf(a.dim) - TIE_ORDER.indexOf(b.dim)
+    })
 
-  // Use epsilon to guard against floating-point noise in absGap; any difference
-  // smaller than 0.01 pts on a 0-100 scale is meaningless and resolved by TIE_ORDER.
-  gaps.sort((a, b) => {
-    const diff = b.absGap - a.absGap
-    if (Math.abs(diff) > 0.01) return diff
-    return TIE_ORDER.indexOf(a.dim) - TIE_ORDER.indexOf(b.dim)
-  })
-
-  // Skip dims with gap === 0 (no clear direction)
-  const ranked = gaps.filter(g => g.gap !== 0)
-
-  const selected: typeof gaps = []
-  for (const g of ranked) {
-    if (selected.length < 2) {
-      selected.push(g)
-    } else if (selected.length === 2) {
-      // Include 3rd dim if within 5 pts of 2nd
-      if (g.absGap >= selected[1].absGap - 5) {
-        selected.push(g)
-      }
-      break
-    }
+  // Select top 2; add 3rd if within 5 pts of 2nd (max 6 questions total)
+  const selected = ranked.slice(0, 2)
+  if (ranked.length > 2 && ranked[2].distance >= ranked[1].distance - 5) {
+    selected.push(ranked[2])
   }
 
   const questions: string[] = []
-  for (const { dim, gap } of selected) {
-    const subtype = gap > 0 ? 'excess' : 'deficit'
+  for (const { dim, direction } of selected) {
     for (const qi of [1, 2] as const) {
       const row = rows.find(
         r =>
           r.section === 'INTERVIEW_QUESTIONS' &&
           r.dimension === dim &&
-          r.subtype === subtype &&
+          r.subtype === direction &&
           r.questionIndex === qi,
       )
       if (row) questions.push(row.content)
