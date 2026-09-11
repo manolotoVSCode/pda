@@ -40,6 +40,7 @@ enum NarrativeSection {
   PROJECTION
   INTENSITY
   GAP_ANALYSIS
+  POTENTIAL
 }
 
 enum IntensityLevel {
@@ -49,12 +50,13 @@ enum IntensityLevel {
 }
 
 model Consultant {
-  id           String      @id @default(cuid())
+  id           String       @id @default(cuid())
   name         String
   passwordHash String
   positions    Position[]
   candidates   Candidate[]
-  createdAt    DateTime    @default(now())
+  assessments  Assessment[]
+  createdAt    DateTime     @default(now())
 }
 
 model Position {
@@ -72,22 +74,29 @@ model Position {
 }
 
 model Candidate {
-  id           String       @id @default(cuid())
-  consultantId String
-  consultant   Consultant   @relation(fields: [consultantId], references: [id])
-  name         String
-  email        String?
-  assessments  Assessment[]
-  createdAt    DateTime     @default(now())
+  id             String       @id @default(cuid())
+  consultantId   String
+  consultant     Consultant   @relation(fields: [consultantId], references: [id])
+  name           String
+  lastName       String?
+  email          String?
+  gender         String?
+  birthDate      DateTime?
+  consentPrivacy Boolean      @default(false)
+  consentComms   Boolean      @default(false)
+  assessments    Assessment[]
+  createdAt      DateTime     @default(now())
 }
 
 model Assessment {
   id              String           @id @default(cuid())
   token           String           @unique @default(cuid())
-  candidateId     String
-  candidate       Candidate        @relation(fields: [candidateId], references: [id])
-  positionId      String
-  position        Position         @relation(fields: [positionId], references: [id])
+  consultantId    String
+  consultant      Consultant       @relation(fields: [consultantId], references: [id])
+  candidateId     String?
+  candidate       Candidate?       @relation(fields: [candidateId], references: [id])
+  positionId      String?
+  position        Position?        @relation(fields: [positionId], references: [id])
   status          AssessmentStatus @default(PENDING)
   startedAt       DateTime?
   completedAt     DateTime?
@@ -135,9 +144,9 @@ model Report {
   consistencyIndex Float
   consistencyLevel ConsistencyLevel
   contradictions   Int
-  fitScore         Float
-  projectionScore  Float
-  riskLevel        RiskLevel
+  fitScore         Float?
+  projectionScore  Float?
+  riskLevel        RiskLevel?
   pdfUrl           String?
   generatedAt      DateTime         @default(now())
 }
