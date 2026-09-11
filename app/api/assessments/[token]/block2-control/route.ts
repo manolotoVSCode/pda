@@ -19,11 +19,11 @@ export async function POST(
       (d: unknown) =>
         d !== null &&
         typeof d === 'object' &&
-        typeof (d as any).wordKey === 'string' &&
-        CONTROL_KEYS.has((d as any).wordKey) &&
-        typeof (d as any).selected === 'boolean'
+        typeof (d as Record<string, unknown>).wordKey === 'string' &&
+        CONTROL_KEYS.has((d as Record<string, unknown>).wordKey as string) &&
+        typeof (d as Record<string, unknown>).selected === 'boolean'
     ) ||
-    new Set(decisions.map((d: any) => d.wordKey)).size !== CONTROL_WORDS.length
+    new Set(decisions.map((d: Record<string, unknown>) => d.wordKey)).size !== CONTROL_WORDS.length
   ) {
     return NextResponse.json(
       { error: 'Decisiones de control inválidas.' },
