@@ -4,9 +4,6 @@ import { computeTextualProfile } from './textual'
 import { computeComposite } from './composite'
 import { computeMaskIndex } from './mask'
 import { computeConsistency } from './consistency'
-import { computeFitScore } from './fit'
-import { computeProjection } from './projection'
-
 export function computeAllScores(input: ScoringInput): ScoringResult {
   const pp = computeProfileVector(input.block1Responses)
   const mainBlock2 = input.block2Responses.filter(r => !r.isControl)
