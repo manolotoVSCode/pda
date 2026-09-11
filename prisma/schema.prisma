@@ -39,6 +39,7 @@ enum NarrativeSection {
   INTERVIEW_QUESTIONS
   PROJECTION
   INTENSITY
+  GAP_ANALYSIS
 }
 
 enum IntensityLevel {

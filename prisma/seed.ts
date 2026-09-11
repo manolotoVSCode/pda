@@ -102,10 +102,10 @@ async function main() {
   }
 
   const commDims: Array<{ id: string; dimension: Dimension; content: string }> = [
-    { id: 'comm-D', dimension: 'D', content: 'es directo y orientado a resultados, prioriza la brevedad sobre el detalle, va a la conclusión antes que al proceso, y espera el mismo nivel de concreción de quienes lo rodean.' },
-    { id: 'comm-I', dimension: 'I', content: 'es expresivo y orientado a las personas, usa el entusiasmo y la persuasión para conectar con su interlocutor, y tiende a dar contexto emocional antes que datos duros.' },
-    { id: 'comm-S', dimension: 'S', content: 'es calmado y receptivo, escucha antes de responder, evita la confrontación directa, y busca construir acuerdo antes que imponer una postura.' },
-    { id: 'comm-C', dimension: 'C', content: 'es preciso y basado en datos, prefiere la evidencia sobre la opinión, estructura sus mensajes con cuidado, y puede parecer reservado en contextos informales.' },
+    { id: 'comm-D', dimension: 'D', content: 'Es directo y orientado a resultados. Prioriza la brevedad sobre el detalle, va a la conclusión antes que al proceso, y espera el mismo nivel de concreción de quienes lo rodean.' },
+    { id: 'comm-I', dimension: 'I', content: 'Es expresivo y orientado a las personas. Usa el entusiasmo y la persuasión para conectar con su interlocutor, y tiende a dar contexto emocional antes que datos duros.' },
+    { id: 'comm-S', dimension: 'S', content: 'Es calmado y receptivo. Escucha antes de responder, evita la confrontación directa, y busca construir acuerdo antes que imponer una postura.' },
+    { id: 'comm-C', dimension: 'C', content: 'Es preciso y basado en datos. Prefiere la evidencia sobre la opinión, estructura sus mensajes con cuidado, y puede parecer reservado en contextos informales.' },
   ]
   for (const c of commDims) {
     await prisma.narrativeContent.upsert({
@@ -194,6 +194,65 @@ async function main() {
       where: { id: p.id },
       update: { content: p.content },
       create: { id: p.id, section: 'PROJECTION', riskLevel: p.riskLevel, content: p.content },
+    })
+  }
+
+  type GapEntry = { id: string; dimension: Dimension; subtype: string; content: string }
+  const gapAnalysis: GapEntry[] = [
+    {
+      id: 'gap-D-excess',
+      dimension: 'D',
+      subtype: 'excess',
+      content: 'El candidato supera el perfil ideal en Iniciativa ([gap] pts), lo que puede traducirse en mayor autonomía e impulso del que el cargo requiere. Verificar en entrevista si esto representa una fortaleza o un exceso de la dimensión.',
+    },
+    {
+      id: 'gap-D-deficit',
+      dimension: 'D',
+      subtype: 'deficit',
+      content: 'El candidato está por debajo del perfil ideal en Iniciativa ([gap] pts), lo que puede representar menor asertividad o capacidad de toma de decisión de la esperada. Se recomienda explorar en entrevista cómo el candidato compensa esta brecha.',
+    },
+    {
+      id: 'gap-I-excess',
+      dimension: 'I',
+      subtype: 'excess',
+      content: 'El candidato supera el perfil ideal en Vínculo ([gap] pts), lo que puede traducirse en mayor orientación social del que el cargo requiere. Verificar en entrevista si esto representa una fortaleza o un exceso de la dimensión.',
+    },
+    {
+      id: 'gap-I-deficit',
+      dimension: 'I',
+      subtype: 'deficit',
+      content: 'El candidato está por debajo del perfil ideal en Vínculo ([gap] pts), lo que puede representar menor capacidad de relacionamiento e influencia de la esperada. Se recomienda explorar en entrevista cómo el candidato compensa esta brecha.',
+    },
+    {
+      id: 'gap-S-excess',
+      dimension: 'S',
+      subtype: 'excess',
+      content: 'El candidato supera el perfil ideal en Cadencia ([gap] pts), lo que puede traducirse en mayor orientación a la estabilidad y la rutina del que el cargo requiere. Verificar en entrevista si esto representa una fortaleza o un exceso de la dimensión.',
+    },
+    {
+      id: 'gap-S-deficit',
+      dimension: 'S',
+      subtype: 'deficit',
+      content: 'El candidato está por debajo del perfil ideal en Cadencia ([gap] pts), lo que puede representar menor paciencia y tolerancia a la rutina de la esperada. Se recomienda explorar en entrevista cómo el candidato compensa esta brecha.',
+    },
+    {
+      id: 'gap-C-excess',
+      dimension: 'C',
+      subtype: 'excess',
+      content: 'El candidato supera el perfil ideal en Precisión ([gap] pts), lo que puede traducirse en mayor apego a normas y procesos del que el cargo requiere. Verificar en entrevista si esto representa una fortaleza o un exceso de la dimensión.',
+    },
+    {
+      id: 'gap-C-deficit',
+      dimension: 'C',
+      subtype: 'deficit',
+      content: 'El candidato está por debajo del perfil ideal en Precisión ([gap] pts), lo que puede representar menor atención al detalle y cumplimiento de procedimientos de la esperada. Se recomienda explorar en entrevista cómo el candidato compensa esta brecha.',
+    },
+  ]
+  for (const g of gapAnalysis) {
+    await prisma.narrativeContent.upsert({
+      where: { id: g.id },
+      update: { content: g.content },
+      create: { id: g.id, section: 'GAP_ANALYSIS', dimension: g.dimension, subtype: g.subtype, content: g.content },
     })
   }
 
