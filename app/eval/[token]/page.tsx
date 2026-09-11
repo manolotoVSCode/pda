@@ -13,9 +13,9 @@ export default async function EvalEntryPage({
 
   if (!assessment) notFound()
 
-  // Self-registration required before any block
+  // Self-registration required before any block; show intro first
   if (!assessment.candidateId) {
-    redirect(`/eval/${params.token}/register`)
+    redirect(`/eval/${params.token}/intro`)
   }
 
   if (assessment.status === 'COMPLETED') {

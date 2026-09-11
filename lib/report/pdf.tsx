@@ -22,6 +22,7 @@ type Props = {
   consistencyLevel: 'HIGH' | 'MODERATE' | 'LOW'
   barChartSvg: string
   radarChartSvg: string
+  logoDataUri?: string
 }
 
 const BRAND = '#2d4a7a'
@@ -64,7 +65,7 @@ export function ReportDocument(props: Props) {
     candidateName, generatedAt,
     sections, pc, pp, pi,
     maskIndex, consistencyIndex, consistencyLevel,
-    barChartSvg, radarChartSvg,
+    barChartSvg, radarChartSvg, logoDataUri,
   } = props
 
   return (
@@ -72,6 +73,10 @@ export function ReportDocument(props: Props) {
       {/* Cover */}
       <Page size="A4" style={s.page}>
         <View style={s.cover}>
+          {logoDataUri && (
+            // eslint-disable-next-line jsx-a11y/alt-text
+            <Image style={{ width: 220, height: 66, marginBottom: 32 }} src={logoDataUri} />
+          )}
           <Text style={s.coverTitle}>Informe de Perfil Conductual</Text>
           <Text style={s.coverSub}>{candidateName}</Text>
           <Text style={s.coverDate}>

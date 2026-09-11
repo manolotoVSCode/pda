@@ -1,8 +1,6 @@
 import Link from 'next/link'
 
 const navItems = [
-  { href: '/positions', label: 'Cargos', description: 'Crear y editar cargos con perfil ideal' },
-  { href: '/candidates', label: 'Candidatos', description: 'Registrar candidatos' },
   { href: '/assessments', label: 'Evaluaciones', description: 'Crear evaluaciones y ver resultados' },
   { href: '/settings/lexicon', label: 'Léxico', description: 'Editar diccionario del Bloque 3' },
   { href: '/settings/templates', label: 'Plantillas', description: 'Editar banco de párrafos narrativos' },

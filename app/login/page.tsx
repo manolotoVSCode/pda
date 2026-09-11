@@ -1,6 +1,7 @@
 'use client'
 import { useState, FormEvent } from 'react'
 import { useRouter } from 'next/navigation'
+import Image from 'next/image'
 
 export default function LoginPage() {
   const [password, setPassword] = useState('')
@@ -28,7 +29,15 @@ export default function LoginPage() {
   return (
     <main className="min-h-screen flex items-center justify-center bg-slate-50">
       <div className="bg-white rounded-2xl shadow-sm border border-slate-200 p-8 w-full max-w-sm">
-        <h1 className="text-xl font-semibold text-slate-800 mb-6">Acceso consultor</h1>
+        <div className="flex justify-center mb-8">
+          <Image
+            src="/logo-ackermann.png"
+            alt="Ackermann International"
+            width={200}
+            height={60}
+            priority
+          />
+        </div>
         <form onSubmit={handleSubmit} className="space-y-4">
           <input
             type="password"

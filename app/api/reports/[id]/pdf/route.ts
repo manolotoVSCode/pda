@@ -9,6 +9,8 @@ import { selectInterviewQuestions } from '@/lib/report/questions'
 import { buildReportSections, type NarrativeRow } from '@/lib/report/narrative'
 import { buildBarChartSvg, buildRadarChartSvg } from '@/lib/report/charts'
 import React from 'react'
+import fs from 'fs'
+import path from 'path'
 
 export async function GET(
   _req: Request,
@@ -64,6 +66,11 @@ export async function GET(
   const barChartSvg = buildBarChartSvg(pc)
   const radarChartSvg = buildRadarChartSvg(pp, pi)
 
+  const logoPath = path.join(process.cwd(), 'public', 'logo-ackermann.png')
+  const logoDataUri = fs.existsSync(logoPath)
+    ? `data:image/png;base64,${fs.readFileSync(logoPath).toString('base64')}`
+    : undefined
+
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const buffer = await renderToBuffer(
     React.createElement(ReportDocument, {
@@ -76,6 +83,7 @@ export async function GET(
       consistencyLevel: report.consistencyLevel as 'HIGH' | 'MODERATE' | 'LOW',
       barChartSvg,
       radarChartSvg,
+      logoDataUri,
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     }) as any,
   )
