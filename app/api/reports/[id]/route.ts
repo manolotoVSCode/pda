@@ -19,11 +19,7 @@ export async function POST(
 
   const assessment = await db.assessment.findUnique({
     where: { id: assessmentId },
-    include: {
-      candidate: true,
-      position: true,
-      blockResponses: true,
-    },
+    include: { candidate: true, blockResponses: true },
   })
 
   if (!assessment) return NextResponse.json({ error: 'Assessment not found' }, { status: 404 })
@@ -58,23 +54,13 @@ export async function POST(
       isControl: r.isControl,
     }))
 
-  const ideal = {
-    D: assessment.position.idealD,
-    I: assessment.position.idealI,
-    S: assessment.position.idealS,
-    C: assessment.position.idealC,
-  }
-
-  const scores = computeAllScores(
-    {
-      block1Responses,
-      block2Responses,
-      block3Text: assessment.block3Text ?? '',
-      durationSeconds: assessment.durationSeconds ?? 0,
-      lexicon,
-    },
-    ideal,
-  )
+  const scores = computeAllScores({
+    block1Responses,
+    block2Responses,
+    block3Text: assessment.block3Text ?? '',
+    durationSeconds: assessment.durationSeconds ?? 0,
+    lexicon,
+  })
 
   // Load narrative content
   const narrativeRows = await db.narrativeContent.findMany()
@@ -89,21 +75,22 @@ export async function POST(
     content: r.content,
   }))
 
-  const interviewQuestions = selectInterviewQuestions(rows, scores.pc, ideal)
+  const interviewQuestions = selectInterviewQuestions(rows, scores.pc)
+
+  const candidateName = assessment.candidate
+    ? [assessment.candidate.name, assessment.candidate.lastName].filter(Boolean).join(' ')
+    : 'Sin nombre'
 
   const sections = buildReportSections(
     rows,
     scores.pc,
-    ideal,
-    scores.fitScore,
     scores.maskIndex,
     scores.consistencyLevel,
-    scores.riskLevel,
-    interviewQuestions,
-    assessment.candidate.name,
+    candidateName,
   )
+  sections.interviewQuestions = interviewQuestions
 
-  // Upsert report
+  // Upsert report (fitScore, projectionScore, riskLevel stored as null)
   const report = await db.report.upsert({
     where: { assessmentId },
     update: {
@@ -115,9 +102,9 @@ export async function POST(
       consistencyIndex: scores.consistencyIndex,
       consistencyLevel: scores.consistencyLevel,
       contradictions: scores.contradictions,
-      fitScore: scores.fitScore,
-      projectionScore: scores.projectionScore,
-      riskLevel: scores.riskLevel,
+      fitScore: null,
+      projectionScore: null,
+      riskLevel: null,
     },
     create: {
       assessmentId,
@@ -129,9 +116,9 @@ export async function POST(
       consistencyIndex: scores.consistencyIndex,
       consistencyLevel: scores.consistencyLevel,
       contradictions: scores.contradictions,
-      fitScore: scores.fitScore,
-      projectionScore: scores.projectionScore,
-      riskLevel: scores.riskLevel,
+      fitScore: null,
+      projectionScore: null,
+      riskLevel: null,
     },
   })
 
