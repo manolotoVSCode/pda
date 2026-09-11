@@ -649,7 +649,9 @@ Cada palabra de control es sinónimo semántico de la palabra principal de su di
 | ctrl_D | Resuelto | D1 Decidido | D | ✓ Aprobado |
 | ctrl_I | Amigable | I1 Sociable | I | ✓ Aprobado |
 | ctrl_S | Sosegado | S1 Paciente | S | ✓ Aprobado |
-| ctrl_C | Detallista | C1 Meticuloso | C | ✓ Aprobado |
+| ctrl_C | Detallista | C1 Meticuloso | C | ✓ Aprobado — a vigilar en piloto |
+
+**Nota de seguimiento (piloto de validación):** `ctrl_C` (Detallista ↔ C1 Meticuloso) fue el par de mayor estimación teórica de p_match (0.91), pero queda marcado para observación prioritaria durante el piloto. "Detallista" connota orientación al producto o al resultado; "Meticuloso" connota orientación al proceso o al método. Para algunos evaluados los dos términos pueden evocar constructos distinguibles, produciendo una contradicción que no refleja inconsistencia de atención sino diferenciación semántica genuina. Si el piloto confirma una tasa de contradicción en este par sistemáticamente superior a los demás, se revisará la palabra. Por ahora el par queda como está.
 
 ### 8.2 Diseño de interacción del instrumento
 

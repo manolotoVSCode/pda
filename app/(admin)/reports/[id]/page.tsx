@@ -142,18 +142,32 @@ export default async function ReportPage({ params }: { params: { id: string } })
         ))}
       </section>
 
-      {/* 6–9. Secciones narrativas */}
+      {/* 6–8. Secciones narrativas */}
       {[
         { num: 6, title: 'Estilo de Comunicación', text: sections.communication },
         { num: 7, title: 'Motivadores y Desmotivadores', text: sections.motivators },
         { num: 8, title: 'Comportamiento bajo Presión', text: sections.pressure },
-        { num: 9, title: 'Señales de Alerta', text: sections.alerts },
       ].map(s => (
         <section key={s.num} className="mb-6">
           <h2 className="text-lg font-semibold text-slate-700 border-b border-slate-200 pb-1 mb-3">{s.num}. {s.title}</h2>
           <p className="text-sm text-slate-700">{s.text}</p>
         </section>
       ))}
+
+      {/* 9. Señales de Alerta */}
+      <section className="mb-6">
+        <h2 className="text-lg font-semibold text-slate-700 border-b border-slate-200 pb-1 mb-3">9. Señales de Alerta</h2>
+        <p className="text-sm text-slate-700 mb-3">{sections.alerts}</p>
+        {report.maskIndex > 40 ? (
+          <div className="bg-amber-50 border border-amber-300 rounded p-3 text-sm text-amber-800">
+            <span className="font-semibold">Índice de Máscara Social: {Math.round(report.maskIndex)}%</span> — nivel elevado de esfuerzo de adaptación. El perfil percibido difiere significativamente del perfil interno; considerar en la interpretación.
+          </div>
+        ) : (
+          <div className="bg-slate-50 border border-slate-200 rounded p-3 text-sm text-slate-600">
+            <span className="font-semibold">Índice de Máscara Social: {Math.round(report.maskIndex)}%</span> — dentro del rango esperado.
+          </div>
+        )}
+      </section>
 
       {/* 10. Preguntas de profundización */}
       <section className="mb-6">
@@ -179,11 +193,6 @@ export default async function ReportPage({ params }: { params: { id: string } })
         </p>
       </section>
 
-      {report.maskIndex > 40 && (
-        <div className="bg-amber-50 border border-amber-200 rounded p-3 text-sm text-amber-800">
-          <span className="font-semibold">Índice de Máscara Social:</span> {Math.round(report.maskIndex)}% — nivel elevado de esfuerzo de adaptación.
-        </div>
-      )}
     </main>
   )
 }

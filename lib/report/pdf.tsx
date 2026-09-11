@@ -40,6 +40,8 @@ const s = StyleSheet.create({
   label: { fontSize: 9, color: '#666', fontFamily: 'Helvetica-Bold', width: 80 },
   value: { fontSize: 10, color: '#222' },
   note: { fontSize: 9, color: '#555', fontStyle: 'italic', marginTop: 16, borderTopWidth: 0.5, borderTopColor: '#ccc', borderTopStyle: 'solid', paddingTop: 8 },
+  maskInfo: { fontSize: 10, color: '#444', backgroundColor: '#f8fafc', borderRadius: 4, padding: 8, marginTop: 6 },
+  maskAlert: { fontSize: 10, color: '#92400e', backgroundColor: '#fffbeb', borderRadius: 4, padding: 8, marginTop: 6 },
   qItem: { marginBottom: 6, paddingLeft: 8 },
   qBullet: { fontSize: 10, color: '#333' },
   chart: { alignSelf: 'center', marginVertical: 10 },
@@ -157,6 +159,15 @@ export function ReportDocument(props: Props) {
         {/* 9. Alertas */}
         <Text style={s.sectionTitle}>9. Señales de Alerta</Text>
         <Text style={s.body}>{sections.alerts}</Text>
+        {maskIndex > 40 ? (
+          <View style={s.maskAlert}>
+            <Text><Text style={{ fontFamily: 'Helvetica-Bold' }}>Índice de Máscara Social: {Math.round(maskIndex)}%</Text> — nivel elevado de esfuerzo de adaptación. El perfil percibido difiere significativamente del perfil interno; considerar en la interpretación.</Text>
+          </View>
+        ) : (
+          <View style={s.maskInfo}>
+            <Text><Text style={{ fontFamily: 'Helvetica-Bold' }}>Índice de Máscara Social: {Math.round(maskIndex)}%</Text> — dentro del rango esperado.</Text>
+          </View>
+        )}
 
         {/* 10. Preguntas de profundización */}
         <Text style={s.sectionTitle}>10. Preguntas de Profundización</Text>
@@ -176,13 +187,6 @@ export function ReportDocument(props: Props) {
           Este informe describe el estilo conductual de la persona evaluada y no mide habilidades, conocimientos ni garantiza desempeño en ningún contexto específico. El instrumento está basado en la teoría pública DISC (Marston, 1928) y representa una arquitectura de trabajo no validada psicométricamente. Los resultados deben interpretarse como orientación y complementarse con otras fuentes de información.
         </Text>
 
-        {maskIndex > 40 && (
-          <View style={{ marginTop: 6 }}>
-            <Text style={s.body}>
-              Índice de Máscara Social: {Math.round(maskIndex)}% — nivel de esfuerzo de adaptación elevado.
-            </Text>
-          </View>
-        )}
       </Page>
     </Document>
   )
