@@ -160,7 +160,8 @@ async function main() {
     ['executiveSummary NO menciona riesgo', !sections.executiveSummary.includes('Riesgo')],
     ['profundización tiene 4 o 6 preguntas', [4, 6].includes(sections.interviewQuestions.length)],
     ['POTENTIAL row encontrado', sections.potential.length > 0],
-    ['GAP_ANALYSIS texts usan "punto neutro"', sections.dominantTraits.every(t => t.text.includes('punto neutro'))],
+    ['traits con distancia ≥5 pts usan "punto neutro" direccional', sections.dominantTraits.filter(t => t.distance >= 5).every(t => t.text.includes('punto neutro') && t.text !== 'Esta dimensión se ubica cerca del punto neutro de la escala, sin una tendencia marcada en ninguna dirección.')],
+    ['traits con distancia <5 pts reciben frase neutra', sections.dominantTraits.filter(t => t.distance < 5).every(t => t.text === 'Esta dimensión se ubica cerca del punto neutro de la escala, sin una tendencia marcada en ninguna dirección.')],
   ]
 
   let allPassed = true

@@ -45,6 +45,10 @@ export const DIM_LABELS: Record<Dimension, string> = {
 export const DIMS: Dimension[] = ['D', 'I', 'S', 'C']
 const TIE_ORDER = DIMS
 
+// Minimum distance from center required to emit a directional paragraph
+const NEUTRAL_THRESHOLD = 5
+const NEUTRAL_TEXT = 'Esta dimensión se ubica cerca del punto neutro de la escala, sin una tendencia marcada en ninguna dirección.'
+
 function dominantDim(pc: DimensionVector): Dimension {
   return TIE_ORDER.reduce((best, dim) => (pc[dim] > pc[best] ? dim : best))
 }
@@ -130,21 +134,22 @@ export function buildReportSections(
       : null
   const alerts = (alertRow?.content ?? '') + (maskNote ? ' ' + maskNote : '')
 
-  // Dominant traits: sorted by distance to center, descending
+  // Dominant traits: sorted by distance to center, descending; explicit tiebreaker by DISC priority
   const distances = computeDistanceToCenter(pc)
   const dominantTraits: TraitEntry[] = DIMS
     .map(dim => {
       const distance = distances[dim]
       const direction: 'excess' | 'deficit' = pc[dim] >= 50 ? 'excess' : 'deficit'
-      return {
-        dim,
-        distance,
-        direction,
-        label: DIM_LABELS[dim],
-        text: buildTraitText(rows, dim, distance, direction),
-      }
+      const text = distance >= NEUTRAL_THRESHOLD
+        ? buildTraitText(rows, dim, distance, direction)
+        : NEUTRAL_TEXT
+      return { dim, distance, direction, label: DIM_LABELS[dim], text }
     })
-    .sort((a, b) => b.distance - a.distance)
+    .sort((a, b) => {
+      const d = b.distance - a.distance
+      if (d !== 0) return d
+      return TIE_ORDER.indexOf(a.dim) - TIE_ORDER.indexOf(b.dim)
+    })
 
   // Potential: looked up by dominant dimension, [nombre] replaced with candidateName
   const potentialRow = findRow(rows, 'POTENTIAL', { dimension: dom })
