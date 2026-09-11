@@ -1,0 +1,203 @@
+import { PrismaClient, Dimension, NarrativeSection, IntensityLevel, RiskLevel } from '@prisma/client'
+import { PrismaPg } from '@prisma/adapter-pg'
+import bcrypt from 'bcryptjs'
+
+const connectionString = process.env.DATABASE_URL ?? 'postgresql://postgres:postgres@localhost:5432/conductual'
+const adapter = new PrismaPg({ connectionString })
+const prisma = new PrismaClient({ adapter })
+
+async function main() {
+  const passwordHash = await bcrypt.hash(
+    process.env.ADMIN_PASSWORD ?? 'admin-dev-only',
+    12
+  )
+  await prisma.consultant.upsert({
+    where: { id: 'default-consultant' },
+    update: {},
+    create: { id: 'default-consultant', name: 'Administrador', passwordHash },
+  })
+
+  const lexiconData: Array<{ dimension: Dimension; term: string; weight: number }> = [
+    { dimension: 'D', term: 'decidido', weight: 3 },
+    { dimension: 'D', term: 'directo', weight: 3 },
+    { dimension: 'D', term: 'competitivo', weight: 3 },
+    { dimension: 'D', term: 'exigente', weight: 2 },
+    { dimension: 'D', term: 'firme', weight: 2 },
+    { dimension: 'D', term: 'audaz', weight: 2 },
+    { dimension: 'D', term: 'control', weight: 2 },
+    { dimension: 'D', term: 'resultado', weight: 2 },
+    { dimension: 'D', term: 'autoridad', weight: 2 },
+    { dimension: 'D', term: 'confrontar', weight: 2 },
+    { dimension: 'D', term: 'impaciente', weight: 1 },
+    { dimension: 'D', term: 'urgencia', weight: 1 },
+    { dimension: 'D', term: 'independiente', weight: 1 },
+    { dimension: 'D', term: 'riesgo', weight: 1 },
+    { dimension: 'D', term: 'cuestionar', weight: 1 },
+    { dimension: 'I', term: 'sociable', weight: 3 },
+    { dimension: 'I', term: 'entusiasta', weight: 3 },
+    { dimension: 'I', term: 'comunicativo', weight: 3 },
+    { dimension: 'I', term: 'persuasivo', weight: 3 },
+    { dimension: 'I', term: 'expresivo', weight: 2 },
+    { dimension: 'I', term: 'optimista', weight: 2 },
+    { dimension: 'I', term: 'carismatico', weight: 2 },
+    { dimension: 'I', term: 'espontaneo', weight: 2 },
+    { dimension: 'I', term: 'extrovertido', weight: 2 },
+    { dimension: 'I', term: 'relacionarse', weight: 2 },
+    { dimension: 'I', term: 'amigable', weight: 1 },
+    { dimension: 'I', term: 'cercano', weight: 1 },
+    { dimension: 'I', term: 'positivo', weight: 1 },
+    { dimension: 'I', term: 'interactuar', weight: 1 },
+    { dimension: 'I', term: 'motivar', weight: 1 },
+    { dimension: 'S', term: 'paciente', weight: 3 },
+    { dimension: 'S', term: 'calmado', weight: 3 },
+    { dimension: 'S', term: 'constante', weight: 3 },
+    { dimension: 'S', term: 'tranquilo', weight: 3 },
+    { dimension: 'S', term: 'leal', weight: 2 },
+    { dimension: 'S', term: 'conciliador', weight: 2 },
+    { dimension: 'S', term: 'sereno', weight: 2 },
+    { dimension: 'S', term: 'estable', weight: 2 },
+    { dimension: 'S', term: 'colaborador', weight: 2 },
+    { dimension: 'S', term: 'rutina', weight: 2 },
+    { dimension: 'S', term: 'escuchar', weight: 1 },
+    { dimension: 'S', term: 'armonia', weight: 1 },
+    { dimension: 'S', term: 'apoyo', weight: 1 },
+    { dimension: 'S', term: 'disponible', weight: 1 },
+    { dimension: 'S', term: 'flexible', weight: 1 },
+    { dimension: 'C', term: 'meticuloso', weight: 3 },
+    { dimension: 'C', term: 'riguroso', weight: 3 },
+    { dimension: 'C', term: 'analitico', weight: 3 },
+    { dimension: 'C', term: 'detallista', weight: 3 },
+    { dimension: 'C', term: 'ordenado', weight: 3 },
+    { dimension: 'C', term: 'cauteloso', weight: 2 },
+    { dimension: 'C', term: 'preciso', weight: 2 },
+    { dimension: 'C', term: 'norma', weight: 2 },
+    { dimension: 'C', term: 'procedimiento', weight: 2 },
+    { dimension: 'C', term: 'verificar', weight: 2 },
+    { dimension: 'C', term: 'reservado', weight: 1 },
+    { dimension: 'C', term: 'logico', weight: 1 },
+    { dimension: 'C', term: 'estructura', weight: 1 },
+    { dimension: 'C', term: 'calidad', weight: 1 },
+    { dimension: 'C', term: 'consistente', weight: 1 },
+  ]
+
+  for (const entry of lexiconData) {
+    await prisma.lexiconTerm.upsert({
+      where: { dimension_term: { dimension: entry.dimension, term: entry.term } },
+      update: { weight: entry.weight },
+      create: entry,
+    })
+  }
+
+  const intensityModifiers: Array<{ id: string; intensity: IntensityLevel; content: string }> = [
+    { id: 'intensity-HIGH', intensity: 'HIGH', content: 'Esta característica se manifiesta de forma intensa y consistente: ' },
+    { id: 'intensity-MEDIUM', intensity: 'MEDIUM', content: 'Esta característica está presente de forma moderada: ' },
+    { id: 'intensity-LOW', intensity: 'LOW', content: 'Esta característica aparece de forma leve u ocasional: ' },
+  ]
+  for (const m of intensityModifiers) {
+    await prisma.narrativeContent.upsert({
+      where: { id: m.id },
+      update: { content: m.content },
+      create: { id: m.id, section: 'INTENSITY', intensity: m.intensity, content: m.content },
+    })
+  }
+
+  const commDims: Array<{ id: string; dimension: Dimension; content: string }> = [
+    { id: 'comm-D', dimension: 'D', content: 'es directo y orientado a resultados, prioriza la brevedad sobre el detalle, va a la conclusión antes que al proceso, y espera el mismo nivel de concreción de quienes lo rodean.' },
+    { id: 'comm-I', dimension: 'I', content: 'es expresivo y orientado a las personas, usa el entusiasmo y la persuasión para conectar con su interlocutor, y tiende a dar contexto emocional antes que datos duros.' },
+    { id: 'comm-S', dimension: 'S', content: 'es calmado y receptivo, escucha antes de responder, evita la confrontación directa, y busca construir acuerdo antes que imponer una postura.' },
+    { id: 'comm-C', dimension: 'C', content: 'es preciso y basado en datos, prefiere la evidencia sobre la opinión, estructura sus mensajes con cuidado, y puede parecer reservado en contextos informales.' },
+  ]
+  for (const c of commDims) {
+    await prisma.narrativeContent.upsert({
+      where: { id: c.id },
+      update: { content: c.content },
+      create: { id: c.id, section: 'COMMUNICATION', dimension: c.dimension, content: c.content },
+    })
+  }
+
+  const motivDims: Array<{ id: string; dimension: Dimension; content: string }> = [
+    { id: 'motiv-D', dimension: 'D', content: 'se motiva con la autoridad, el reto y el control sobre el resultado de su trabajo; se desmotiva con la rutina, la falta de autonomía y los procesos lentos de decisión.' },
+    { id: 'motiv-I', dimension: 'I', content: 'se motiva con el reconocimiento público, la interacción social y la variedad de proyectos; se desmotiva con el trabajo aislado, la falta de retroalimentación y las tareas repetitivas de bajo contacto humano.' },
+    { id: 'motiv-S', dimension: 'S', content: 'se motiva con la estabilidad, un entorno predecible y relaciones de confianza sostenidas en el tiempo; se desmotiva con los cambios abruptos, la presión de tiempo constante y los conflictos interpersonales no resueltos.' },
+    { id: 'motiv-C', dimension: 'C', content: 'se motiva con la claridad de reglas, la calidad del resultado y el reconocimiento a la precisión de su trabajo; se desmotiva con la ambigüedad, las decisiones apresuradas y la falta de información antes de actuar.' },
+  ]
+  for (const m of motivDims) {
+    await prisma.narrativeContent.upsert({
+      where: { id: m.id },
+      update: { content: m.content },
+      create: { id: m.id, section: 'MOTIVATORS', dimension: m.dimension, content: m.content },
+    })
+  }
+
+  const pressureDims: Array<{ id: string; dimension: Dimension; content: string }> = [
+    { id: 'pressure-D', dimension: 'D', content: 'acelera la toma de decisiones y asume el control de la situación, incluso a costa de pasar por alto la opinión de otros, y puede volverse confrontativo si percibe que el ritmo no es suficiente.' },
+    { id: 'pressure-I', dimension: 'I', content: 'busca apoyo social y puede volverse más verbal e impulsivo en sus reacciones, externalizando la tensión al hablar de ella antes que procesarla en silencio.' },
+    { id: 'pressure-S', dimension: 'S', content: 'tiende a replegarse y a evitar el conflicto abierto, lo que puede leerse externamente como pasividad aunque internamente esté procesando la situación, y necesita tiempo antes de reaccionar.' },
+    { id: 'pressure-C', dimension: 'C', content: 'se refugia en el análisis y los datos, lo que puede retrasar la acción si la situación exige una respuesta rápida sin toda la información disponible.' },
+  ]
+  for (const p of pressureDims) {
+    await prisma.narrativeContent.upsert({
+      where: { id: p.id },
+      update: { content: p.content },
+      create: { id: p.id, section: 'PRESSURE', dimension: p.dimension, content: p.content },
+    })
+  }
+
+  const alertDims: Array<{ id: string; dimension: Dimension; content: string }> = [
+    { id: 'alert-D', dimension: 'D', content: 'podría evitar tomar decisiones difíciles o asumir responsabilidad directa en situaciones de conflicto, prefiriendo que otros tomen la iniciativa.' },
+    { id: 'alert-I', dimension: 'I', content: 'podría tener dificultad para generar entusiasmo o adhesión espontánea en un equipo, y podría percibirse como distante en contextos que requieren cercanía social.' },
+    { id: 'alert-S', dimension: 'S', content: 'podría mostrar impaciencia ante procesos largos y dificultad para sostener el mismo nivel de compromiso en tareas de rutina o de largo plazo.' },
+    { id: 'alert-C', dimension: 'C', content: 'podría mostrar informalidad frente a normas, procesos o el detalle técnico, lo que puede traducirse en errores por apresuramiento en tareas que exigen precisión.' },
+  ]
+  for (const a of alertDims) {
+    await prisma.narrativeContent.upsert({
+      where: { id: a.id },
+      update: { content: a.content },
+      create: { id: a.id, section: 'ALERTS', dimension: a.dimension, content: a.content },
+    })
+  }
+
+  type IQEntry = { id: string; dimension: Dimension; subtype: string; questionIndex: number; content: string }
+  const interviewQuestions: IQEntry[] = [
+    { id: 'iq-D-excess-1', dimension: 'D', subtype: 'excess', questionIndex: 1, content: 'Cuénteme una situación reciente en la que tuvo que ceder el control de una decisión a otra persona, ¿cómo lo manejó?' },
+    { id: 'iq-D-excess-2', dimension: 'D', subtype: 'excess', questionIndex: 2, content: '¿Cómo maneja el desacuerdo con un superior cuando no tiene la autoridad para decidir?' },
+    { id: 'iq-D-deficit-1', dimension: 'D', subtype: 'deficit', questionIndex: 1, content: 'Describa una situación en la que tuvo que tomar una decisión difícil sin el consenso de todo el equipo, ¿qué hizo?' },
+    { id: 'iq-D-deficit-2', dimension: 'D', subtype: 'deficit', questionIndex: 2, content: 'Cuénteme de un momento en que tuvo que confrontar directamente a alguien para lograr un resultado, ¿cómo se sintió?' },
+    { id: 'iq-I-excess-1', dimension: 'I', subtype: 'excess', questionIndex: 1, content: 'Describa una situación en la que tuvo que priorizar el resultado técnico sobre mantener el ambiente social del equipo.' },
+    { id: 'iq-I-excess-2', dimension: 'I', subtype: 'excess', questionIndex: 2, content: '¿Cómo maneja tareas que requieren trabajo aislado y poco contacto con otras personas durante periodos largos?' },
+    { id: 'iq-I-deficit-1', dimension: 'I', subtype: 'deficit', questionIndex: 1, content: 'Cuénteme de una situación en la que tuvo que persuadir a un grupo escéptico para que adoptara su idea.' },
+    { id: 'iq-I-deficit-2', dimension: 'I', subtype: 'deficit', questionIndex: 2, content: '¿Cómo construye relaciones de confianza con personas que recién conoce en un contexto profesional?' },
+    { id: 'iq-S-excess-1', dimension: 'S', subtype: 'excess', questionIndex: 1, content: 'Describa un cambio organizacional grande que no esperaba, ¿cómo se adaptó?' },
+    { id: 'iq-S-excess-2', dimension: 'S', subtype: 'excess', questionIndex: 2, content: 'Cuénteme de una situación en la que tuvo que actuar rápido sin tiempo para planificar con calma.' },
+    { id: 'iq-S-deficit-1', dimension: 'S', subtype: 'deficit', questionIndex: 1, content: 'Describa una tarea rutinaria que tuvo que sostener durante un periodo largo, ¿cómo mantuvo el nivel de compromiso?' },
+    { id: 'iq-S-deficit-2', dimension: 'S', subtype: 'deficit', questionIndex: 2, content: 'Cuénteme de una situación de conflicto con un compañero que se extendió por semanas, ¿cómo lo gestionó?' },
+    { id: 'iq-C-excess-1', dimension: 'C', subtype: 'excess', questionIndex: 1, content: 'Describa una situación en la que tuvo que tomar una decisión con información incompleta.' },
+    { id: 'iq-C-excess-2', dimension: 'C', subtype: 'excess', questionIndex: 2, content: '¿Cómo maneja una instrucción que contradice el procedimiento establecido pero que viene de un superior?' },
+    { id: 'iq-C-deficit-1', dimension: 'C', subtype: 'deficit', questionIndex: 1, content: 'Cuénteme de un error que cometió por no seguir un procedimiento establecido, ¿qué aprendió?' },
+    { id: 'iq-C-deficit-2', dimension: 'C', subtype: 'deficit', questionIndex: 2, content: 'Describa cómo verifica la calidad de su propio trabajo antes de entregarlo.' },
+  ]
+  for (const q of interviewQuestions) {
+    await prisma.narrativeContent.upsert({
+      where: { id: q.id },
+      update: { content: q.content },
+      create: { id: q.id, section: 'INTERVIEW_QUESTIONS', dimension: q.dimension, subtype: q.subtype, questionIndex: q.questionIndex, content: q.content },
+    })
+  }
+
+  const projections: Array<{ id: string; riskLevel: RiskLevel; content: string }> = [
+    { id: 'proj-LOW', riskLevel: 'LOW', content: 'El perfil conductual de [nombre] muestra un ajuste alto con las exigencias del cargo evaluado, con un [porcentaje] de compatibilidad y un bajo riesgo de fricción en la adaptación. Se recomienda avanzar en el proceso, complementando esta lectura con la verificación en entrevista de los puntos señalados en la sección de señales de alerta.' },
+    { id: 'proj-MEDIUM', riskLevel: 'MEDIUM', content: 'El perfil conductual de [nombre] muestra un ajuste moderado con las exigencias del cargo evaluado, con un [porcentaje] de compatibilidad. Existen brechas puntuales, principalmente en [dimensión de mayor brecha], que conviene verificar directamente en entrevista antes de tomar una decisión final.' },
+    { id: 'proj-HIGH', riskLevel: 'HIGH', content: 'El perfil conductual de [nombre] muestra un ajuste bajo con las exigencias del cargo evaluado, con un [porcentaje] de compatibilidad. Las brechas identificadas, en particular en [dimensión de mayor brecha], sugieren un periodo de adaptación más largo o mayor necesidad de acompañamiento si se decide avanzar con la contratación.' },
+  ]
+  for (const p of projections) {
+    await prisma.narrativeContent.upsert({
+      where: { id: p.id },
+      update: { content: p.content },
+      create: { id: p.id, section: 'PROJECTION', riskLevel: p.riskLevel, content: p.content },
+    })
+  }
+
+  console.log('Seed completo.')
+}
+
+main().catch(console.error).finally(() => prisma.$disconnect())
