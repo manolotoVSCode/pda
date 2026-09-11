@@ -56,7 +56,6 @@ export async function POST(
     block1Responses,
     block2Responses,
     block3Text: assessment.block3Text ?? '',
-    durationSeconds: assessment.durationSeconds ?? 0,
     lexicon,
   })
 

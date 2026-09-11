@@ -97,9 +97,21 @@ export default async function ReportPage({ params }: { params: { id: string } })
             {sections.consistencyWarning}
           </div>
         )}
-        <div className="grid grid-cols-2 gap-3">
+        <div className="grid grid-cols-3 gap-3">
           <StatBox label="Índice de Consistencia (0–100)" value={String(Math.round(report.consistencyIndex))} />
           <StatBox label="Nivel" value={consistencyLabel} />
+          <StatBox
+            label="Tiempo de resolución"
+            value={
+              report.assessment.durationSeconds != null
+                ? (() => {
+                    const m = Math.floor(report.assessment.durationSeconds / 60)
+                    const s = report.assessment.durationSeconds % 60
+                    return m > 0 ? `${m} min ${s} seg` : `${s} seg`
+                  })()
+                : '—'
+            }
+          />
         </div>
       </section>
 

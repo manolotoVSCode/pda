@@ -69,7 +69,6 @@ async function main() {
     block1Responses: B1,
     block2Responses: B2,
     block3Text: B3_TEXT,
-    durationSeconds: DURATION_SECONDS,
     lexicon,
   })
 

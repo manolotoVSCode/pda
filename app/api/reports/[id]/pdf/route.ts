@@ -81,6 +81,7 @@ export async function GET(
       maskIndex: report.maskIndex,
       consistencyIndex: report.consistencyIndex,
       consistencyLevel: report.consistencyLevel as 'HIGH' | 'MODERATE' | 'LOW',
+      durationSeconds: report.assessment.durationSeconds,
       barChartSvg,
       radarChartSvg,
       logoDataUri,

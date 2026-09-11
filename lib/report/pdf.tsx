@@ -20,6 +20,7 @@ type Props = {
   maskIndex: number
   consistencyIndex: number
   consistencyLevel: 'HIGH' | 'MODERATE' | 'LOW'
+  durationSeconds: number | null
   barChartSvg: string
   radarChartSvg: string
   logoDataUri?: string
@@ -64,9 +65,17 @@ export function ReportDocument(props: Props) {
   const {
     candidateName, generatedAt,
     sections, pc, pp, pi,
-    maskIndex, consistencyIndex, consistencyLevel,
+    maskIndex, consistencyIndex, consistencyLevel, durationSeconds,
     barChartSvg, radarChartSvg, logoDataUri,
   } = props
+
+  const durationLabel = durationSeconds != null
+    ? (() => {
+        const m = Math.floor(durationSeconds / 60)
+        const s = durationSeconds % 60
+        return m > 0 ? `${m} min ${s} seg` : `${s} seg`
+      })()
+    : '—'
 
   return (
     <Document>
@@ -112,6 +121,10 @@ export function ReportDocument(props: Props) {
           <View style={s.indexBox}>
             <Text style={s.indexVal}>{consistencyLabel(consistencyLevel)}</Text>
             <Text style={s.indexLbl}>Nivel</Text>
+          </View>
+          <View style={s.indexBox}>
+            <Text style={s.indexVal}>{durationLabel}</Text>
+            <Text style={s.indexLbl}>Tiempo de resolución</Text>
           </View>
         </View>
 

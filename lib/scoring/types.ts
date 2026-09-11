@@ -23,7 +23,6 @@ export interface ScoringInput {
   block1Responses: WordSelectionInput[]
   block2Responses: WordSelectionInput[]
   block3Text: string
-  durationSeconds: number
   lexicon: LexiconEntry[]
 }
 

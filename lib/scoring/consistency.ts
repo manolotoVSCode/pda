@@ -10,7 +10,6 @@ export interface ConsistencyResult {
 
 export function computeConsistency(
   block2Words: WordSelectionInput[],
-  durationSeconds: number,
 ): ConsistencyResult {
   const markedKeys = new Set(block2Words.map(w => w.wordKey))
   let contradictions = 0
@@ -18,10 +17,7 @@ export function computeConsistency(
     if (markedKeys.has(controlKey) !== markedKeys.has(mainKey)) contradictions++
   }
   const rawConsistency = (1 - contradictions / 4) * 100
-  const durationMinutes = durationSeconds / 60
-  const consistencyIndex = durationMinutes < 3
-    ? Math.min(rawConsistency, 60)
-    : rawConsistency
+  const consistencyIndex = rawConsistency
   const level: 'HIGH' | 'MODERATE' | 'LOW' =
     consistencyIndex >= 75 ? 'HIGH' :
     consistencyIndex >= 50 ? 'MODERATE' : 'LOW'

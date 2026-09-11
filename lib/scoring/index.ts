@@ -13,7 +13,7 @@ export function computeAllScores(input: ScoringInput): ScoringResult {
   const pc = computeComposite(pi, pp, pt)
   const maskIndex = computeMaskIndex(pp, pi)
   const { contradictions, consistencyIndex, level: consistencyLevel } =
-    computeConsistency(input.block2Responses, input.durationSeconds)
+    computeConsistency(input.block2Responses)
   return { pp, pi, pt, pc, maskIndex, consistencyIndex, consistencyLevel, contradictions }
 }
 

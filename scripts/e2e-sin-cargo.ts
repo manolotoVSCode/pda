@@ -130,7 +130,6 @@ async function main() {
     block1Responses: BLOCK1,
     block2Responses: BLOCK2_WITH_CONTROLS,
     block3Text: BLOCK3_TEXT,
-    durationSeconds: 420,
     lexicon,
   })
 
