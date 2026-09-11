@@ -28,7 +28,6 @@ type Props = {
 }
 
 const BRAND = '#2d4a7a'
-const ACCENT = '#e05c3a'
 
 const s = StyleSheet.create({
   page: { padding: 48, fontFamily: 'Helvetica', fontSize: 10, color: '#222', lineHeight: 1.5 },
@@ -128,7 +127,7 @@ export function ReportDocument(props: Props) {
 
         {/* 3. Bar chart */}
         <Text style={s.sectionTitle}>3. Perfil Compuesto por Dimensión</Text>
-        <Image style={{ ...s.chart, width: 380, height: 160 }} src={svgToDataUri(barChartSvg)} />
+        <Image style={{ ...s.chart, width: 380, height: 160 }} src={svgToDataUri(barChartSvg)} alt="Gráfico de barras del perfil conductual" />
         <View style={s.row}>
           {(['D', 'I', 'S', 'C'] as const).map(dim => (
             <View key={dim} style={{ flex: 1, alignItems: 'center' }}>
@@ -141,7 +140,7 @@ export function ReportDocument(props: Props) {
 
         {/* 4. Radar chart */}
         <Text style={s.sectionTitle}>4. Comparación con Perfil Ideal</Text>
-        <Image style={{ ...s.chart, width: 260, height: 260 }} src={svgToDataUri(radarChartSvg)} />
+        <Image style={{ ...s.chart, width: 260, height: 260 }} src={svgToDataUri(radarChartSvg)} alt="Gráfico radar comparativo contra el perfil ideal" />
 
         {/* 5. Gap analysis */}
         <Text style={s.sectionTitle}>5. Análisis de Brecha</Text>
