@@ -1,6 +1,7 @@
 import { db } from '@/lib/db'
 import { notFound } from 'next/navigation'
 import Link from 'next/link'
+import { GenerateReportButton } from './GenerateReportButton'
 
 const STATUS_LABELS: Record<string, string> = {
   PENDING: 'Pendiente',
@@ -75,6 +76,9 @@ export default async function AssessmentDetailPage({ params }: { params: { id: s
         </p>
       </div>
 
+      {assessment.status === 'COMPLETED' && !assessment.report && (
+        <GenerateReportButton assessmentId={assessment.id} />
+      )}
       {assessment.report && (
         <Link
           href={`/reports/${assessment.report.id}`}
