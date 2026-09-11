@@ -11,7 +11,7 @@ export async function GET() {
   const assessments = await db.assessment.findMany({
     orderBy: { createdAt: 'desc' },
     include: {
-      candidate: { select: { name: true } },
+      candidate: { select: { name: true, lastName: true } },
       position: { select: { name: true } },
       report: { select: { id: true } },
     },
@@ -19,17 +19,12 @@ export async function GET() {
   return NextResponse.json(assessments)
 }
 
-export async function POST(req: Request) {
+export async function POST() {
   const session = await getIronSession<SessionData>(cookies(), sessionOptions)
   if (!session.isAdmin) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
 
-  const { candidateId, positionId } = await req.json()
-  if (!candidateId || !positionId) {
-    return NextResponse.json({ error: 'candidateId and positionId required' }, { status: 400 })
-  }
-
   const assessment = await db.assessment.create({
-    data: { candidateId, positionId },
+    data: { consultantId: 'default-consultant' },
   })
   return NextResponse.json(assessment, { status: 201 })
 }
