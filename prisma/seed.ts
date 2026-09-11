@@ -83,7 +83,7 @@ async function main() {
   for (const entry of lexiconData) {
     await prisma.lexiconTerm.upsert({
       where: { dimension_term: { dimension: entry.dimension, term: entry.term } },
-      update: { weight: entry.weight },
+      update: {},
       create: entry,
     })
   }
@@ -96,7 +96,7 @@ async function main() {
   for (const m of intensityModifiers) {
     await prisma.narrativeContent.upsert({
       where: { id: m.id },
-      update: { content: m.content },
+      update: {},
       create: { id: m.id, section: 'INTENSITY', intensity: m.intensity, content: m.content },
     })
   }
@@ -110,7 +110,7 @@ async function main() {
   for (const c of commDims) {
     await prisma.narrativeContent.upsert({
       where: { id: c.id },
-      update: { content: c.content },
+      update: {},
       create: { id: c.id, section: 'COMMUNICATION', dimension: c.dimension, content: c.content },
     })
   }
@@ -124,7 +124,7 @@ async function main() {
   for (const m of motivDims) {
     await prisma.narrativeContent.upsert({
       where: { id: m.id },
-      update: { content: m.content },
+      update: {},
       create: { id: m.id, section: 'MOTIVATORS', dimension: m.dimension, content: m.content },
     })
   }
@@ -138,7 +138,7 @@ async function main() {
   for (const p of pressureDims) {
     await prisma.narrativeContent.upsert({
       where: { id: p.id },
-      update: { content: p.content },
+      update: {},
       create: { id: p.id, section: 'PRESSURE', dimension: p.dimension, content: p.content },
     })
   }
@@ -152,7 +152,7 @@ async function main() {
   for (const a of alertDims) {
     await prisma.narrativeContent.upsert({
       where: { id: a.id },
-      update: { content: a.content },
+      update: {},
       create: { id: a.id, section: 'ALERTS', dimension: a.dimension, content: a.content },
     })
   }
@@ -179,7 +179,7 @@ async function main() {
   for (const q of interviewQuestions) {
     await prisma.narrativeContent.upsert({
       where: { id: q.id },
-      update: { content: q.content },
+      update: {},
       create: { id: q.id, section: 'INTERVIEW_QUESTIONS', dimension: q.dimension, subtype: q.subtype, questionIndex: q.questionIndex, content: q.content },
     })
   }
@@ -192,7 +192,7 @@ async function main() {
   for (const p of projections) {
     await prisma.narrativeContent.upsert({
       where: { id: p.id },
-      update: { content: p.content },
+      update: {},
       create: { id: p.id, section: 'PROJECTION', riskLevel: p.riskLevel, content: p.content },
     })
   }
@@ -251,7 +251,7 @@ async function main() {
   for (const g of gapAnalysis) {
     await prisma.narrativeContent.upsert({
       where: { id: g.id },
-      update: { content: g.content },
+      update: {},
       create: { id: g.id, section: 'GAP_ANALYSIS', dimension: g.dimension, subtype: g.subtype, content: g.content },
     })
   }
