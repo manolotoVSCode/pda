@@ -23,6 +23,7 @@ type Props = {
   durationSeconds: number | null
   barChartSvg: string
   radarChartSvg: string
+  tendenciasChartSvg: string
   logoDataUri?: string
 }
 
@@ -66,7 +67,7 @@ export function ReportDocument(props: Props) {
     candidateName, generatedAt,
     sections, pc, pp, pi,
     maskIndex, consistencyIndex, consistencyLevel, durationSeconds,
-    barChartSvg, radarChartSvg, logoDataUri,
+    barChartSvg, radarChartSvg, tendenciasChartSvg, logoDataUri,
   } = props
 
   const durationLabel = durationSeconds != null
@@ -199,8 +200,13 @@ export function ReportDocument(props: Props) {
         <Text style={s.sectionTitle}>11. Potencial y Recomendaciones de Desarrollo</Text>
         <Text style={s.body}>{sections.potential}</Text>
 
-        {/* 12. Nota de uso */}
-        <Text style={s.sectionTitle}>12. Nota de Uso</Text>
+        {/* 12. Tendencias de comportamiento */}
+        <Text style={s.sectionTitle}>12. Tendencias de Comportamiento</Text>
+        {/* eslint-disable-next-line jsx-a11y/alt-text -- Image es de @react-pdf/renderer */}
+        <Image style={{ ...s.chart, width: 420, height: 250 }} src={svgToDataUri(tendenciasChartSvg)} />
+
+        {/* 13. Nota de uso */}
+        <Text style={s.sectionTitle}>13. Nota de Uso</Text>
         <Text style={s.note}>
           Este informe describe el estilo conductual de la persona evaluada y no mide habilidades, conocimientos ni garantiza desempeño en ningún contexto específico. El instrumento está basado en la teoría pública DISC (Marston, 1928) y representa una arquitectura de trabajo no validada psicométricamente. Los resultados deben interpretarse como orientación y complementarse con otras fuentes de información.
         </Text>

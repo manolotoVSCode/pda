@@ -3,7 +3,7 @@ import { notFound } from 'next/navigation'
 import Link from 'next/link'
 import { selectInterviewQuestions } from '@/lib/report/questions'
 import { buildReportSections, type NarrativeRow, DIM_LABELS } from '@/lib/report/narrative'
-import { buildBarChartSvg, buildRadarChartSvg } from '@/lib/report/charts'
+import { buildBarChartSvg, buildRadarChartSvg, buildTendenciasChartSvg } from '@/lib/report/charts'
 import { DIMENSION_LEGEND } from '@/lib/report/legend'
 
 function StatBox({ label, value }: { label: string; value: string }) {
@@ -54,6 +54,7 @@ export default async function ReportPage({ params }: { params: { id: string } })
 
   const barSvg = buildBarChartSvg(pc)
   const radarSvg = buildRadarChartSvg(pp, pi)
+  const tendenciasSvg = buildTendenciasChartSvg(pc)
 
   const consistencyLabel =
     report.consistencyLevel === 'HIGH' ? 'Alta' :
@@ -197,9 +198,15 @@ export default async function ReportPage({ params }: { params: { id: string } })
         <p className="text-sm text-slate-700">{sections.potential}</p>
       </section>
 
-      {/* 12. Nota de uso */}
+      {/* 12. Tendencias de comportamiento */}
       <section className="mb-6">
-        <h2 className="text-lg font-semibold text-slate-700 border-b border-slate-200 pb-1 mb-3">12. Nota de Uso</h2>
+        <h2 className="text-lg font-semibold text-slate-700 border-b border-slate-200 pb-1 mb-3">12. Tendencias de Comportamiento</h2>
+        <div dangerouslySetInnerHTML={{ __html: tendenciasSvg }} />
+      </section>
+
+      {/* 13. Nota de uso */}
+      <section className="mb-6">
+        <h2 className="text-lg font-semibold text-slate-700 border-b border-slate-200 pb-1 mb-3">13. Nota de Uso</h2>
         <p className="text-xs text-slate-500 italic">
           Este informe describe el estilo conductual de la persona evaluada y no mide habilidades, conocimientos ni garantiza desempeño en ningún contexto específico. El instrumento está basado en la teoría pública DISC (Marston, 1928) y representa una arquitectura de trabajo no validada psicométricamente. Los resultados deben interpretarse como orientación y complementarse con otras fuentes de información.
         </p>

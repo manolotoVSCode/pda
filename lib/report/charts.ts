@@ -16,6 +16,20 @@ const DIM_COLORS: Record<Dimension, string> = {
   C: '#4a7fbf',
 }
 
+const DIM_LIGHT_COLORS: Record<Dimension, string> = {
+  D: '#fde8e0',
+  I: '#fef3dc',
+  S: '#d9f4ec',
+  C: '#dce9f7',
+}
+
+const TENDENCIAS_LABELS: Record<Dimension, string> = {
+  D: 'Orientación competitiva a resultados',
+  I: 'Persuasión y comunicación interpersonal',
+  S: 'Atención y escucha',
+  C: 'Seguimiento de normas y procedimientos',
+}
+
 const DIMS: Dimension[] = ['D', 'I', 'S', 'C']
 
 export function buildBarChartSvg(pc: DimensionVector): string {
@@ -98,5 +112,44 @@ export function buildRadarChartSvg(pp: DimensionVector, pi: DimensionVector): st
   <text x="${CX - 62}" y="${SIZE - 14}" font-family="Helvetica" font-size="10" fill="#333">Perfil Percibido</text>
   <circle cx="${CX + 30}" cy="${SIZE - 18}" r="5" fill="#4a7fbf"/>
   <text x="${CX + 38}" y="${SIZE - 14}" font-family="Helvetica" font-size="10" fill="#333">Perfil Interno</text>
+</svg>`
+}
+
+export function buildTendenciasChartSvg(pc: DimensionVector): string {
+  const W = 420
+  const SLIDER_H = 65
+  const TRACK_Y = 22  // track top relative to each slider block
+  const TRACK_H = 10
+  const H = DIMS.length * SLIDER_H - 10  // last slider needs no trailing gap
+
+  const gradDefs = DIMS.map(dim => `
+    <linearGradient id="gt-${dim}" x1="0%" y1="0%" x2="100%" y2="0%">
+      <stop offset="0%" stop-color="${DIM_LIGHT_COLORS[dim]}"/>
+      <stop offset="100%" stop-color="${DIM_COLORS[dim]}"/>
+    </linearGradient>`).join('')
+
+  const sliders = DIMS.map((dim, i) => {
+    const baseY = i * SLIDER_H
+    const trackTop = baseY + TRACK_Y
+    const indicatorX = (pc[dim] / 100) * W
+    const circleY = trackTop - 4
+    const extremeY = trackTop + TRACK_H + 14
+    const divider = i < DIMS.length - 1
+      ? `<line x1="0" y1="${baseY + SLIDER_H - 5}" x2="${W}" y2="${baseY + SLIDER_H - 5}" stroke="#f1f5f9" stroke-width="1"/>`
+      : ''
+    return `
+  <text x="0" y="${baseY + 14}" font-family="Helvetica-Bold" font-size="11" fill="#475569">${TENDENCIAS_LABELS[dim]}</text>
+  <text x="${W}" y="${baseY + 14}" font-family="Helvetica-Bold" font-size="12" fill="${DIM_COLORS[dim]}" text-anchor="end">${Math.round(pc[dim])}</text>
+  <rect x="0" y="${trackTop}" width="${W}" height="${TRACK_H}" rx="5" fill="url(#gt-${dim})"/>
+  <rect x="${(indicatorX - 1.5).toFixed(1)}" y="${trackTop - 2}" width="3" height="${TRACK_H + 4}" rx="1.5" fill="white"/>
+  <circle cx="${indicatorX.toFixed(1)}" cy="${circleY}" r="6" fill="${DIM_COLORS[dim]}" stroke="white" stroke-width="2"/>
+  <text x="0" y="${extremeY}" font-family="Helvetica" font-size="9" fill="#94a3b8">Mayor esfuerzo</text>
+  <text x="${W}" y="${extremeY}" font-family="Helvetica" font-size="9" fill="#94a3b8" text-anchor="end">Menor esfuerzo</text>
+  ${divider}`
+  }).join('')
+
+  return `<svg xmlns="http://www.w3.org/2000/svg" width="${W}" height="${H}" viewBox="0 0 ${W} ${H}">
+  <defs>${gradDefs}</defs>
+  ${sliders}
 </svg>`
 }
