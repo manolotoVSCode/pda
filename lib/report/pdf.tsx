@@ -8,6 +8,7 @@ import {
 } from '@react-pdf/renderer'
 import type { ReportSections } from './narrative'
 import type { DimensionVector } from '../scoring/types'
+import { DIMENSION_LEGEND } from './legend'
 
 type Props = {
   candidateName: string
@@ -31,14 +32,14 @@ const s = StyleSheet.create({
   coverTitle: { fontSize: 28, fontFamily: 'Helvetica-Bold', color: BRAND, marginBottom: 8, textAlign: 'center' },
   coverSub: { fontSize: 16, color: '#555', marginBottom: 4, textAlign: 'center' },
   coverDate: { fontSize: 10, color: '#888', marginTop: 24, textAlign: 'center' },
-  sectionTitle: { fontSize: 13, fontFamily: 'Helvetica-Bold', color: BRAND, marginTop: 20, marginBottom: 6, borderBottom: `1.5pt solid ${BRAND}`, paddingBottom: 3 },
+  sectionTitle: { fontSize: 13, fontFamily: 'Helvetica-Bold', color: BRAND, marginTop: 20, marginBottom: 6, borderBottomWidth: 1.5, borderBottomColor: BRAND, borderBottomStyle: 'solid', paddingBottom: 3 },
   subTitle: { fontSize: 11, fontFamily: 'Helvetica-Bold', color: '#333', marginTop: 10, marginBottom: 3 },
   body: { fontSize: 10, color: '#333', marginBottom: 4 },
   warning: { fontSize: 10, color: '#b91c1c', backgroundColor: '#fee2e2', padding: 8, borderRadius: 4, marginBottom: 10 },
   row: { flexDirection: 'row', gap: 8, marginBottom: 6 },
   label: { fontSize: 9, color: '#666', fontFamily: 'Helvetica-Bold', width: 80 },
   value: { fontSize: 10, color: '#222' },
-  note: { fontSize: 9, color: '#555', fontStyle: 'italic', marginTop: 16, borderTop: '0.5pt solid #ccc', paddingTop: 8 },
+  note: { fontSize: 9, color: '#555', fontStyle: 'italic', marginTop: 16, borderTopWidth: 0.5, borderTopColor: '#ccc', borderTopStyle: 'solid', paddingTop: 8 },
   qItem: { marginBottom: 6, paddingLeft: 8 },
   qBullet: { fontSize: 10, color: '#333' },
   chart: { alignSelf: 'center', marginVertical: 10 },
@@ -75,6 +76,17 @@ export function ReportDocument(props: Props) {
             Generado el {generatedAt.toLocaleDateString('es-CL', { day: '2-digit', month: 'long', year: 'numeric' })}
           </Text>
         </View>
+      </Page>
+
+      {/* Dimension Legend Page */}
+      <Page size="A4" style={s.page}>
+        <Text style={s.sectionTitle}>Las cuatro dimensiones del modelo</Text>
+        {DIMENSION_LEGEND.map(d => (
+          <View key={d.dim} style={{ marginBottom: 14 }}>
+            <Text style={s.subTitle}>{d.dim} — {d.name}</Text>
+            <Text style={s.body}>{d.description}</Text>
+          </View>
+        ))}
       </Page>
 
       {/* Report body */}

@@ -11,7 +11,8 @@ import { PrismaPg } from '@prisma/adapter-pg'
 import { computeAllScores } from '../lib/scoring'
 import { selectInterviewQuestions } from '../lib/report/questions'
 import { buildReportSections, type NarrativeRow, DIMS, DIM_LABELS } from '../lib/report/narrative'
-import type { BlockResponseInput, LexiconEntry } from '../lib/scoring/types'
+import type { WordSelectionInput, LexiconEntry } from '../lib/scoring/types'
+import { WORD_MAP } from '../lib/instrument/words'
 
 const connectionString =
   process.env.DATABASE_URL ?? 'postgresql://postgres:postgres@localhost:5432/conductual'
@@ -22,26 +23,19 @@ const prisma = new PrismaClient({ adapter })
 
 const CANDIDATE_NAME = 'Ana Martínez'
 
-// Bloque 1 — 6 groups (Perfil Percibido)
-const B1: BlockResponseInput[] = [
-  { groupNumber: 1, mostDim: 'D', leastDim: 'S', isControl: false },
-  { groupNumber: 2, mostDim: 'D', leastDim: 'C', isControl: false },
-  { groupNumber: 3, mostDim: 'D', leastDim: 'S', isControl: false },
-  { groupNumber: 4, mostDim: 'I', leastDim: 'C', isControl: false },
-  { groupNumber: 5, mostDim: 'D', leastDim: 'S', isControl: false },
-  { groupNumber: 6, mostDim: 'D', leastDim: 'C', isControl: false },
-]
+// Bloque 1 — 8 words (Perfil Percibido)
+const B1_KEYS = ['D1','D2','D3','D4','D5','D6','I1','S1']
+const B1: WordSelectionInput[] = B1_KEYS.map(key => {
+  const w = WORD_MAP.get(key)!
+  return { wordKey: key, dimension: w.dim, isControl: w.isControl }
+})
 
-// Bloque 2 — 7 groups (Perfil Interno + control)
-const B2: BlockResponseInput[] = [
-  { groupNumber: 1, mostDim: 'D', leastDim: 'S', isControl: false },
-  { groupNumber: 2, mostDim: 'D', leastDim: 'S', isControl: false },
-  { groupNumber: 3, mostDim: 'D', leastDim: 'S', isControl: false },
-  { groupNumber: 4, mostDim: 'D', leastDim: 'C', isControl: false },
-  { groupNumber: 5, mostDim: 'D', leastDim: 'S', isControl: false },
-  { groupNumber: 6, mostDim: 'D', leastDim: 'C', isControl: false },
-  { groupNumber: 7, mostDim: 'D', leastDim: 'S', isControl: true },
-]
+// Bloque 2 — 9 words (Perfil Interno + control)
+const B2_KEYS = ['D1','D2','D3','D4','D5','D6','ctrl_D','I1','S1']
+const B2: WordSelectionInput[] = B2_KEYS.map(key => {
+  const w = WORD_MAP.get(key)!
+  return { wordKey: key, dimension: w.dim, isControl: w.isControl }
+})
 
 const B3_TEXT =
   'Me considero una persona decidida y directa en mi forma de actuar. ' +

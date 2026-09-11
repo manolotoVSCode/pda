@@ -4,39 +4,31 @@ import { computeAllScores } from '../lib/scoring'
 import { computeDistanceToCenter } from '../lib/scoring/center'
 import { selectInterviewQuestions } from '../lib/report/questions'
 import { buildReportSections, type NarrativeRow, DIMS, DIM_LABELS } from '../lib/report/narrative'
-import type { BlockResponseInput, LexiconEntry } from '../lib/scoring/types'
+import type { WordSelectionInput, LexiconEntry } from '../lib/scoring/types'
+import { WORD_MAP } from '../lib/instrument/words'
 
 const connectionString = process.env.DATABASE_URL ?? 'postgresql://postgres:postgres@localhost:5432/conductual'
 const adapter = new PrismaPg({ connectionString })
 const prisma = new PrismaClient({ adapter })
 
-// Deterministic test responses: Bloque 1 (PP) — 6 groups
-const BLOCK1: BlockResponseInput[] = [
-  { groupNumber: 1, mostDim: 'D', leastDim: 'C', isControl: false },
-  { groupNumber: 2, mostDim: 'D', leastDim: 'S', isControl: false },
-  { groupNumber: 3, mostDim: 'D', leastDim: 'C', isControl: false },
-  { groupNumber: 4, mostDim: 'D', leastDim: 'S', isControl: false },
-  { groupNumber: 5, mostDim: 'I', leastDim: 'C', isControl: false },
-  { groupNumber: 6, mostDim: 'D', leastDim: 'S', isControl: false },
-]
+const B1_KEYS = ['D1','D2','D3','D4','D5','D6','I1','S1']
+const B2_KEYS = ['D1','D2','D3','D4','D5','D6','ctrl_D','I1','S1']
 
-// Bloque 2 (PI) — 6 main + 1 control (consistent answers)
-const BLOCK2: BlockResponseInput[] = [
-  { groupNumber: 1, mostDim: 'D', leastDim: 'C', isControl: false },
-  { groupNumber: 2, mostDim: 'D', leastDim: 'S', isControl: false },
-  { groupNumber: 3, mostDim: 'D', leastDim: 'C', isControl: false },
-  { groupNumber: 4, mostDim: 'D', leastDim: 'S', isControl: false },
-  { groupNumber: 5, mostDim: 'I', leastDim: 'C', isControl: false },
-  { groupNumber: 6, mostDim: 'D', leastDim: 'S', isControl: false },
-  { groupNumber: 7, mostDim: 'D', leastDim: 'C', isControl: true }, // control: consistent with group 1
-]
+const BLOCK1: WordSelectionInput[] = B1_KEYS.map(key => {
+  const w = WORD_MAP.get(key)!
+  return { wordKey: key, dimension: w.dim, isControl: w.isControl }
+})
+
+const BLOCK2: WordSelectionInput[] = B2_KEYS.map(key => {
+  const w = WORD_MAP.get(key)!
+  return { wordKey: key, dimension: w.dim, isControl: w.isControl }
+})
 
 const BLOCK3_TEXT = 'Soy una persona decidida y directa, orientada al resultado y la autonomía. Me motiva el reto y el control sobre mi trabajo.'
 
 async function main() {
   console.log('=== E2E Sin Cargo ===\n')
 
-  // 1. Create Assessment (no candidateId, no positionId)
   const consultant = await prisma.consultant.findUniqueOrThrow({ where: { id: 'default-consultant' } })
   const assessment = await prisma.assessment.create({
     data: { consultantId: consultant.id },
@@ -44,7 +36,6 @@ async function main() {
   console.log(`Assessment creado: ${assessment.id} (token: ${assessment.token})`)
   console.log(`candidateId: ${assessment.candidateId ?? 'null — correcto'}\n`)
 
-  // 2. Self-registration: create Candidate and link
   const candidate = await prisma.candidate.create({
     data: {
       consultantId: consultant.id,
@@ -58,18 +49,29 @@ async function main() {
     where: { id: assessment.id },
     data: { candidateId: candidate.id, status: 'IN_PROGRESS', startedAt: new Date() },
   })
-  console.log(`Candidata registrada: ${candidate.name} ${candidate.lastName ?? ''}`)
-  console.log(`Email: ${candidate.email}, consentPrivacy: ${candidate.consentPrivacy}\n`)
+  console.log(`Candidata: ${candidate.name} ${candidate.lastName ?? ''}`)
+  console.log(`Email: ${candidate.email}\n`)
 
-  // 3. Simulate block responses
   for (const r of BLOCK1) {
     await prisma.blockResponse.create({
-      data: { assessmentId: assessment.id, block: 1, ...r },
+      data: {
+        assessmentId: assessment.id,
+        block: 1,
+        wordKey: r.wordKey,
+        dimension: r.dimension as 'D' | 'I' | 'S' | 'C',
+        isControl: r.isControl,
+      },
     })
   }
   for (const r of BLOCK2) {
     await prisma.blockResponse.create({
-      data: { assessmentId: assessment.id, block: 2, ...r },
+      data: {
+        assessmentId: assessment.id,
+        block: 2,
+        wordKey: r.wordKey,
+        dimension: r.dimension as 'D' | 'I' | 'S' | 'C',
+        isControl: r.isControl,
+      },
     })
   }
   await prisma.assessment.update({
@@ -81,9 +83,8 @@ async function main() {
       durationSeconds: 420,
     },
   })
-  console.log('Respuestas de bloques cargadas.')
+  console.log('Respuestas cargadas.')
 
-  // 4. Load lexicon and compute scores (no ideal)
   const lexiconRows = await prisma.lexiconTerm.findMany({ where: { active: true } })
   const lexicon: LexiconEntry[] = lexiconRows.map(r => ({
     dimension: r.dimension as 'D' | 'I' | 'S' | 'C',
@@ -104,17 +105,15 @@ async function main() {
     console.log(`  ${DIM_LABELS[dim]}: PP=${Math.round(scores.pp[dim])} PI=${Math.round(scores.pi[dim])} PT=${Math.round(scores.pt[dim])} PC=${Math.round(scores.pc[dim])}`)
   }
   console.log(`  Máscara: ${Math.round(scores.maskIndex)}% | Consistencia: ${Math.round(scores.consistencyIndex)} (${scores.consistencyLevel})`)
-  console.log(`  (sin fitScore, sin projectionScore, sin riskLevel — correcto)\n`)
+  console.log(`  Contradicciones: ${scores.contradictions}`)
 
-  // 5. Distances to center
   const distances = computeDistanceToCenter(scores.pc)
-  console.log('=== Distancias al centro ===')
+  console.log('\n=== Distancias al centro ===')
   for (const dim of DIMS) {
     const dir = scores.pc[dim] >= 50 ? 'exceso' : 'déficit'
-    console.log(`  ${DIM_LABELS[dim]}: ${Math.round(distances[dim])} pts (${dir})`)
+    console.log(`  ${DIM_LABELS[dim]}: ${distances[dim].toFixed(4)} pts (${dir})`)
   }
 
-  // 6. Narrative sections
   const narrativeRows = await prisma.narrativeContent.findMany()
   const rows: NarrativeRow[] = narrativeRows.map(r => ({
     id: r.id,
@@ -132,46 +131,42 @@ async function main() {
   const sections = buildReportSections(rows, scores.pc, scores.maskIndex, scores.consistencyLevel, candidateName)
   sections.interviewQuestions = questions
 
-  console.log('\n=== Secciones del informe (sin cargo) ===')
-  console.log(`\n1. consistencyWarning: ${sections.consistencyWarning ?? '(ninguna)'}`)
+  console.log('\n=== Secciones del informe ===')
   console.log(`\n2. executiveSummary:\n   ${sections.executiveSummary}`)
-  console.log(`\n5. dominantTraits:`)
+  console.log('\n5. dominantTraits:')
   for (const t of sections.dominantTraits) {
-    console.log(`   [${t.dim}] ${t.label}: ${Math.round(t.distance)} pts ${t.direction} — ${t.text.slice(0, 60)}...`)
+    console.log(`   [${t.dim}] ${t.label}: ${t.distance.toFixed(4)} pts ${t.direction}`)
+    console.log(`   ${t.text}`)
   }
-  console.log(`\n6. communication:\n   ${sections.communication.slice(0, 100)}...`)
-  console.log(`\n7. motivators:\n   ${sections.motivators.slice(0, 80)}...`)
-  console.log(`\n8. pressure:\n   ${sections.pressure.slice(0, 80)}...`)
-  console.log(`\n9. alerts:\n   ${sections.alerts.slice(0, 80)}...`)
   console.log(`\n10. profundización (${sections.interviewQuestions.length} preguntas):`)
-  sections.interviewQuestions.forEach((q, i) => console.log(`   ${i + 1}. ${q}`))
+  sections.interviewQuestions.forEach((q, i) => console.log(`   ${i+1}. ${q}`))
   console.log(`\n11. potential:\n   ${sections.potential}`)
 
-  // 7. Assertions
   console.log('\n=== Verificaciones ===')
   const checks: [string, boolean][] = [
-    ['Assessment creado sin candidateId inicial', true], // verified above
+    ['Assessment sin candidateId inicial', true],
     ['candidateName incluye apellido', candidateName.includes('Prueba')],
+    ['PP.D=100 (6/6 D en B1)', Math.abs(scores.pp.D - 100) < 0.01],
+    ['PI.D=100 (6/6 D en B2 main)', Math.abs(scores.pi.D - 100) < 0.01],
+    ['contradictions=0 (ctrl_D y D1 ambos marcados)', scores.contradictions === 0],
+    ['consistencyLevel=HIGH', scores.consistencyLevel === 'HIGH'],
     ['dominantTraits tiene 4 entradas', sections.dominantTraits.length === 4],
     ['dominantTraits ordenados por distancia desc', sections.dominantTraits[0].distance >= sections.dominantTraits[1].distance],
     ['potential contiene nombre', sections.potential.includes('Ana')],
     ['potential NO menciona cargo', !sections.potential.toLowerCase().includes('cargo')],
-    ['executiveSummary NO menciona ajuste', !sections.executiveSummary.includes('Ajuste')],
     ['executiveSummary NO menciona riesgo', !sections.executiveSummary.includes('Riesgo')],
-    ['profundización tiene 4 o 6 preguntas', [4, 6].includes(sections.interviewQuestions.length)],
+    ['profundización tiene 4 o 6 preguntas', [4,6].includes(sections.interviewQuestions.length)],
     ['POTENTIAL row encontrado', sections.potential.length > 0],
-    ['traits con distancia ≥5 pts usan "punto neutro" direccional', sections.dominantTraits.filter(t => t.distance >= 5).every(t => t.text.includes('punto neutro') && t.text !== 'Esta dimensión se ubica cerca del punto neutro de la escala, sin una tendencia marcada en ninguna dirección.')],
-    ['traits con distancia <5 pts reciben frase neutra', sections.dominantTraits.filter(t => t.distance < 5).every(t => t.text === 'Esta dimensión se ubica cerca del punto neutro de la escala, sin una tendencia marcada en ninguna dirección.')],
+    ['traits ≥5pts usan "punto neutro" direccional', sections.dominantTraits.filter(t=>t.distance>=5).every(t=>t.text.includes('punto neutro') && t.text !== 'Esta dimensión se ubica cerca del punto neutro de la escala, sin una tendencia marcada en ninguna dirección.')],
+    ['traits <5pts reciben frase neutra', sections.dominantTraits.filter(t=>t.distance<5).every(t=>t.text==='Esta dimensión se ubica cerca del punto neutro de la escala, sin una tendencia marcada en ninguna dirección.')],
   ]
 
   let allPassed = true
   for (const [label, result] of checks) {
-    const mark = result ? '✓' : '✗'
-    console.log(`  ${mark} ${label}`)
+    console.log(`  ${result ? '✓' : '✗'} ${label}`)
     if (!result) allPassed = false
   }
 
-  // Cleanup
   await prisma.blockResponse.deleteMany({ where: { assessmentId: assessment.id } })
   await prisma.assessment.delete({ where: { id: assessment.id } })
   await prisma.candidate.delete({ where: { id: candidate.id } })

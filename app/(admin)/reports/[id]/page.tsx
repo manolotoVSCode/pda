@@ -4,6 +4,7 @@ import Link from 'next/link'
 import { selectInterviewQuestions } from '@/lib/report/questions'
 import { buildReportSections, type NarrativeRow, DIM_LABELS } from '@/lib/report/narrative'
 import { buildBarChartSvg, buildRadarChartSvg } from '@/lib/report/charts'
+import { DIMENSION_LEGEND } from '@/lib/report/legend'
 
 function StatBox({ label, value }: { label: string; value: string }) {
   return (
@@ -74,6 +75,19 @@ export default async function ReportPage({ params }: { params: { id: string } })
       <p className="text-slate-500 mb-6">
         {new Date(report.generatedAt).toLocaleDateString('es-CL', { day: '2-digit', month: 'long', year: 'numeric' })}
       </p>
+
+      {/* Dimension Legend */}
+      <section className="mb-6">
+        <h2 className="text-lg font-semibold text-slate-700 border-b border-slate-200 pb-1 mb-3">Las cuatro dimensiones del modelo</h2>
+        <div className="space-y-3">
+          {DIMENSION_LEGEND.map(d => (
+            <div key={d.dim}>
+              <p className="text-sm font-semibold text-slate-700">{d.dim} — {d.name}</p>
+              <p className="text-sm text-slate-600">{d.description}</p>
+            </div>
+          ))}
+        </div>
+      </section>
 
       {/* 1. Consistencia */}
       <section className="mb-6">

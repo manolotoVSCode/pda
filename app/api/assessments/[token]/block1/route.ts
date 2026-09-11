@@ -1,22 +1,27 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { db } from '@/lib/db'
+import { MAIN_KEYS, WORD_MAP } from '@/lib/instrument/words'
 import type { Dimension } from '@prisma/client'
 
-const VALID_DIMS: Dimension[] = ['D', 'I', 'S', 'C']
+const BLOCK1_LIMIT = 8
 
-export async function PATCH(
+export async function POST(
   req: NextRequest,
   { params }: { params: { token: string } }
 ) {
   const body = await req.json()
-  const { groupNumber, mostDim, leastDim } = body
+  const { selectedKeys } = body
 
   if (
-    typeof groupNumber !== 'number' || groupNumber < 1 || groupNumber > 6 ||
-    !VALID_DIMS.includes(mostDim) || !VALID_DIMS.includes(leastDim) ||
-    mostDim === leastDim
+    !Array.isArray(selectedKeys) ||
+    selectedKeys.length !== BLOCK1_LIMIT ||
+    !selectedKeys.every((k: unknown) => typeof k === 'string' && MAIN_KEYS.has(k as string)) ||
+    new Set(selectedKeys).size !== selectedKeys.length
   ) {
-    return NextResponse.json({ error: 'Datos inválidos' }, { status: 400 })
+    return NextResponse.json(
+      { error: `Debes seleccionar exactamente ${BLOCK1_LIMIT} palabras válidas sin repetir.` },
+      { status: 400 }
+    )
   }
 
   const assessment = await db.assessment.findUnique({
@@ -27,24 +32,21 @@ export async function PATCH(
   if (!assessment) return NextResponse.json({ error: 'No encontrado' }, { status: 404 })
   if (assessment.status === 'COMPLETED') return NextResponse.json({ error: 'Completada' }, { status: 409 })
 
-  await db.blockResponse.upsert({
-    where: {
-      assessmentId_block_groupNumber: {
-        assessmentId: assessment.id,
-        block: 1,
-        groupNumber,
-      },
-    },
-    update: { mostDim, leastDim },
-    create: {
-      assessmentId: assessment.id,
-      block: 1,
-      groupNumber,
-      isControl: false,
-      mostDim,
-      leastDim,
-    },
-  })
+  await db.$transaction([
+    db.blockResponse.deleteMany({ where: { assessmentId: assessment.id, block: 1 } }),
+    db.blockResponse.createMany({
+      data: (selectedKeys as string[]).map(key => {
+        const word = WORD_MAP.get(key)!
+        return {
+          assessmentId: assessment.id,
+          block: 1,
+          wordKey: key,
+          dimension: word.dim as Dimension,
+          isControl: false,
+        }
+      }),
+    }),
+  ])
 
   return NextResponse.json({ ok: true })
 }

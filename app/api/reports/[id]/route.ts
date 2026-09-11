@@ -6,7 +6,7 @@ import { db } from '@/lib/db'
 import { computeAllScores } from '@/lib/scoring'
 import { selectInterviewQuestions } from '@/lib/report/questions'
 import { buildReportSections, type NarrativeRow } from '@/lib/report/narrative'
-import type { BlockResponseInput, LexiconEntry } from '@/lib/scoring/types'
+import type { WordSelectionInput, LexiconEntry } from '@/lib/scoring/types'
 
 export async function POST(
   _req: Request,
@@ -36,21 +36,19 @@ export async function POST(
   }))
 
   // Build scoring input
-  const block1Responses: BlockResponseInput[] = assessment.blockResponses
+  const block1Responses: WordSelectionInput[] = assessment.blockResponses
     .filter(r => r.block === 1)
     .map(r => ({
-      groupNumber: r.groupNumber,
-      mostDim: r.mostDim as 'D' | 'I' | 'S' | 'C',
-      leastDim: r.leastDim as 'D' | 'I' | 'S' | 'C',
+      wordKey: r.wordKey,
+      dimension: r.dimension as 'D' | 'I' | 'S' | 'C',
       isControl: r.isControl,
     }))
 
-  const block2Responses: BlockResponseInput[] = assessment.blockResponses
+  const block2Responses: WordSelectionInput[] = assessment.blockResponses
     .filter(r => r.block === 2)
     .map(r => ({
-      groupNumber: r.groupNumber,
-      mostDim: r.mostDim as 'D' | 'I' | 'S' | 'C',
-      leastDim: r.leastDim as 'D' | 'I' | 'S' | 'C',
+      wordKey: r.wordKey,
+      dimension: r.dimension as 'D' | 'I' | 'S' | 'C',
       isControl: r.isControl,
     }))
 

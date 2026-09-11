@@ -7,10 +7,9 @@ export type DimensionVector = {
   C: number
 }
 
-export interface BlockResponseInput {
-  groupNumber: number
-  mostDim: Dimension
-  leastDim: Dimension
+export interface WordSelectionInput {
+  wordKey: string
+  dimension: Dimension
   isControl: boolean
 }
 
@@ -21,8 +20,8 @@ export interface LexiconEntry {
 }
 
 export interface ScoringInput {
-  block1Responses: BlockResponseInput[]
-  block2Responses: BlockResponseInput[]
+  block1Responses: WordSelectionInput[]
+  block2Responses: WordSelectionInput[]
   block3Text: string
   durationSeconds: number
   lexicon: LexiconEntry[]

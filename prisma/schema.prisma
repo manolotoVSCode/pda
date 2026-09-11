@@ -112,12 +112,11 @@ model BlockResponse {
   assessmentId String
   assessment   Assessment @relation(fields: [assessmentId], references: [id])
   block        Int
-  groupNumber  Int
+  wordKey      String
+  dimension    Dimension
   isControl    Boolean    @default(false)
-  mostDim      Dimension
-  leastDim     Dimension
 
-  @@unique([assessmentId, block, groupNumber])
+  @@unique([assessmentId, block, wordKey])
 }
 
 model Report {
