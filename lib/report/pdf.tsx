@@ -127,7 +127,8 @@ export function ReportDocument(props: Props) {
 
         {/* 3. Bar chart */}
         <Text style={s.sectionTitle}>3. Perfil Compuesto por Dimensión</Text>
-        <Image style={{ ...s.chart, width: 380, height: 160 }} src={svgToDataUri(barChartSvg)} alt="Gráfico de barras del perfil conductual" />
+        {/* eslint-disable-next-line jsx-a11y/alt-text -- Image es de @react-pdf/renderer, no un elemento HTML; la regla no aplica */}
+        <Image style={{ ...s.chart, width: 380, height: 160 }} src={svgToDataUri(barChartSvg)} />
         <View style={s.row}>
           {(['D', 'I', 'S', 'C'] as const).map(dim => (
             <View key={dim} style={{ flex: 1, alignItems: 'center' }}>
@@ -140,7 +141,8 @@ export function ReportDocument(props: Props) {
 
         {/* 4. Radar chart */}
         <Text style={s.sectionTitle}>4. Comparación con Perfil Ideal</Text>
-        <Image style={{ ...s.chart, width: 260, height: 260 }} src={svgToDataUri(radarChartSvg)} alt="Gráfico radar comparativo contra el perfil ideal" />
+        {/* eslint-disable-next-line jsx-a11y/alt-text -- Image es de @react-pdf/renderer, no un elemento HTML; la regla no aplica */}
+        <Image style={{ ...s.chart, width: 260, height: 260 }} src={svgToDataUri(radarChartSvg)} />
 
         {/* 5. Gap analysis */}
         <Text style={s.sectionTitle}>5. Análisis de Brecha</Text>
