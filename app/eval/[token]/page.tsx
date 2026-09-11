@@ -13,6 +13,11 @@ export default async function EvalEntryPage({
 
   if (!assessment) notFound()
 
+  // Self-registration required before any block
+  if (!assessment.candidateId) {
+    redirect(`/eval/${params.token}/register`)
+  }
+
   if (assessment.status === 'COMPLETED') {
     redirect(`/eval/${params.token}/done`)
   }
