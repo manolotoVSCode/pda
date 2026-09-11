@@ -1,0 +1,163 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+enum Dimension {
+  D
+  I
+  S
+  C
+}
+
+enum AssessmentStatus {
+  PENDING
+  IN_PROGRESS
+  COMPLETED
+}
+
+enum ConsistencyLevel {
+  HIGH
+  MODERATE
+  LOW
+}
+
+enum RiskLevel {
+  LOW
+  MEDIUM
+  HIGH
+}
+
+enum NarrativeSection {
+  COMMUNICATION
+  MOTIVATORS
+  PRESSURE
+  ALERTS
+  INTERVIEW_QUESTIONS
+  PROJECTION
+  INTENSITY
+}
+
+enum IntensityLevel {
+  HIGH
+  MEDIUM
+  LOW
+}
+
+model Consultant {
+  id           String      @id @default(cuid())
+  name         String
+  passwordHash String
+  positions    Position[]
+  candidates   Candidate[]
+  createdAt    DateTime    @default(now())
+}
+
+model Position {
+  id           String       @id @default(cuid())
+  consultantId String
+  consultant   Consultant   @relation(fields: [consultantId], references: [id])
+  name         String
+  description  String?
+  idealD       Float
+  idealI       Float
+  idealS       Float
+  idealC       Float
+  assessments  Assessment[]
+  createdAt    DateTime     @default(now())
+}
+
+model Candidate {
+  id           String       @id @default(cuid())
+  consultantId String
+  consultant   Consultant   @relation(fields: [consultantId], references: [id])
+  name         String
+  email        String?
+  assessments  Assessment[]
+  createdAt    DateTime     @default(now())
+}
+
+model Assessment {
+  id              String           @id @default(cuid())
+  token           String           @unique @default(cuid())
+  candidateId     String
+  candidate       Candidate        @relation(fields: [candidateId], references: [id])
+  positionId      String
+  position        Position         @relation(fields: [positionId], references: [id])
+  status          AssessmentStatus @default(PENDING)
+  startedAt       DateTime?
+  completedAt     DateTime?
+  durationSeconds Int?
+  block3Text      String?
+  blockResponses  BlockResponse[]
+  report          Report?
+  createdAt       DateTime         @default(now())
+}
+
+model BlockResponse {
+  id           String     @id @default(cuid())
+  assessmentId String
+  assessment   Assessment @relation(fields: [assessmentId], references: [id])
+  block        Int
+  groupNumber  Int
+  isControl    Boolean    @default(false)
+  mostDim      Dimension
+  leastDim     Dimension
+
+  @@unique([assessmentId, block, groupNumber])
+}
+
+model Report {
+  id               String           @id @default(cuid())
+  assessmentId     String           @unique
+  assessment       Assessment       @relation(fields: [assessmentId], references: [id])
+  ppD              Float
+  ppI              Float
+  ppS              Float
+  ppC              Float
+  piD              Float
+  piI              Float
+  piS              Float
+  piC              Float
+  ptD              Float
+  ptI              Float
+  ptS              Float
+  ptC              Float
+  pcD              Float
+  pcI              Float
+  pcS              Float
+  pcC              Float
+  maskIndex        Float
+  consistencyIndex Float
+  consistencyLevel ConsistencyLevel
+  contradictions   Int
+  fitScore         Float
+  projectionScore  Float
+  riskLevel        RiskLevel
+  pdfUrl           String?
+  generatedAt      DateTime         @default(now())
+}
+
+model LexiconTerm {
+  id        String    @id @default(cuid())
+  dimension Dimension
+  term      String
+  weight    Int
+  active    Boolean   @default(true)
+
+  @@unique([dimension, term])
+}
+
+model NarrativeContent {
+  id            String           @id @default(cuid())
+  section       NarrativeSection
+  dimension     Dimension?
+  subtype       String?
+  questionIndex Int?
+  riskLevel     RiskLevel?
+  intensity     IntensityLevel?
+  content       String
+}
