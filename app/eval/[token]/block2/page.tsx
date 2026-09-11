@@ -3,7 +3,7 @@ import { useState } from 'react'
 import { useRouter } from 'next/navigation'
 import { BLOCK2_DISPLAY } from '@/lib/instrument/words'
 
-const LIMIT = 9
+const LIMIT = 8
 
 interface Props { params: { token: string } }
 
@@ -40,7 +40,7 @@ export default function Block2Page({ params }: Props) {
       setSubmitting(false)
       return
     }
-    router.push(`/eval/${params.token}/block3`)
+    router.push(`/eval/${params.token}/block2-control`)
   }
 
   return (
@@ -61,7 +61,7 @@ export default function Block2Page({ params }: Props) {
       </div>
 
       <p className="text-sm text-slate-600 bg-slate-100 rounded-xl p-4 leading-relaxed">
-        Ahora selecciona exactamente <strong>{LIMIT}</strong> palabras que te describan{' '}
+        Ahora selecciona exactamente <strong>8</strong> palabras que te describan{' '}
         <strong>tal como eres realmente</strong>, sin considerar cómo te ven los demás.
         Al llegar al límite, el resto se desactiva hasta que quites una marca.
       </p>

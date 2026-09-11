@@ -37,8 +37,8 @@ export const MAIN_WORDS: InstrumentWord[] = [
 
 export const CONTROL_WORDS: InstrumentWord[] = [
   { key: 'ctrl_D', text: 'Resuelto',   dim: 'D', isControl: true, pairKey: 'D1' },
-  { key: 'ctrl_I', text: 'Afable',     dim: 'I', isControl: true, pairKey: 'I1' },
-  { key: 'ctrl_S', text: 'Tranquilo',  dim: 'S', isControl: true, pairKey: 'S1' },
+  { key: 'ctrl_I', text: 'Amigable',   dim: 'I', isControl: true, pairKey: 'I1' },
+  { key: 'ctrl_S', text: 'Sosegado',   dim: 'S', isControl: true, pairKey: 'S1' },
   { key: 'ctrl_C', text: 'Detallista', dim: 'C', isControl: true, pairKey: 'C1' },
 ]
 
@@ -54,32 +54,28 @@ export const CONTROL_PAIRS: Array<{ controlKey: string; mainKey: string }> = CON
   .map(w => ({ controlKey: w.key, mainKey: w.pairKey! }))
 
 export const BLOCK2_DISPLAY: InstrumentWord[] = [
-  MAIN_WORDS[0],    // D1 Decidido
-  MAIN_WORDS[6],    // I1 Sociable
-  MAIN_WORDS[12],   // S1 Paciente
-  MAIN_WORDS[18],   // C1 Meticuloso
-  CONTROL_WORDS[1], // ctrl_I Afable
-  MAIN_WORDS[1],    // D2 Directo
-  MAIN_WORDS[19],   // C2 Analítico
-  MAIN_WORDS[13],   // S2 Constante
-  MAIN_WORDS[7],    // I2 Entusiasta
-  MAIN_WORDS[14],   // S3 Colaborador
-  MAIN_WORDS[2],    // D3 Competitivo
-  CONTROL_WORDS[3], // ctrl_C Detallista
-  MAIN_WORDS[20],   // C3 Cauteloso
-  MAIN_WORDS[8],    // I3 Persuasivo
-  CONTROL_WORDS[0], // ctrl_D Resuelto
-  MAIN_WORDS[15],   // S4 Leal
-  MAIN_WORDS[3],    // D4 Exigente
-  MAIN_WORDS[21],   // C4 Ordenado
-  MAIN_WORDS[9],    // I4 Expresivo
-  CONTROL_WORDS[2], // ctrl_S Tranquilo
-  MAIN_WORDS[16],   // S5 Sereno
-  MAIN_WORDS[4],    // D5 Firme
-  MAIN_WORDS[10],   // I5 Optimista
-  MAIN_WORDS[22],   // C5 Riguroso
-  MAIN_WORDS[11],   // I6 Comunicativo
-  MAIN_WORDS[23],   // C6 Reservado
-  MAIN_WORDS[17],   // S6 Conciliador
-  MAIN_WORDS[5],    // D6 Audaz
+  MAIN_WORDS[0],  // D1 Decidido
+  MAIN_WORDS[6],  // I1 Sociable
+  MAIN_WORDS[12], // S1 Paciente
+  MAIN_WORDS[18], // C1 Meticuloso
+  MAIN_WORDS[1],  // D2 Directo
+  MAIN_WORDS[19], // C2 Analítico
+  MAIN_WORDS[13], // S2 Constante
+  MAIN_WORDS[7],  // I2 Entusiasta
+  MAIN_WORDS[14], // S3 Colaborador
+  MAIN_WORDS[2],  // D3 Competitivo
+  MAIN_WORDS[20], // C3 Cauteloso
+  MAIN_WORDS[8],  // I3 Persuasivo
+  MAIN_WORDS[15], // S4 Leal
+  MAIN_WORDS[3],  // D4 Exigente
+  MAIN_WORDS[21], // C4 Ordenado
+  MAIN_WORDS[9],  // I4 Expresivo
+  MAIN_WORDS[16], // S5 Sereno
+  MAIN_WORDS[4],  // D5 Firme
+  MAIN_WORDS[10], // I5 Optimista
+  MAIN_WORDS[22], // C5 Riguroso
+  MAIN_WORDS[11], // I6 Comunicativo
+  MAIN_WORDS[23], // C6 Reservado
+  MAIN_WORDS[17], // S6 Conciliador
+  MAIN_WORDS[5],  // D6 Audaz
 ]

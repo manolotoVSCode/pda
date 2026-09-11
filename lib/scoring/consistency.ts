@@ -23,7 +23,7 @@ export function computeConsistency(
     ? Math.min(rawConsistency, 60)
     : rawConsistency
   const level: 'HIGH' | 'MODERATE' | 'LOW' =
-    consistencyIndex >= 85 ? 'HIGH' :
-    consistencyIndex >= 60 ? 'MODERATE' : 'LOW'
+    consistencyIndex >= 75 ? 'HIGH' :
+    consistencyIndex >= 50 ? 'MODERATE' : 'LOW'
   return { contradictions, rawConsistency, consistencyIndex, level }
 }

@@ -101,8 +101,9 @@ model Assessment {
   startedAt       DateTime?
   completedAt     DateTime?
   durationSeconds Int?
-  block3Text      String?
-  blockResponses  BlockResponse[]
+  block3Text                String?
+  block2ControlCompletedAt  DateTime?
+  blockResponses            BlockResponse[]
   report          Report?
   createdAt       DateTime         @default(now())
 }

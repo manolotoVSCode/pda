@@ -23,10 +23,12 @@ export default async function EvalEntryPage({
   }
 
   const b1Count = assessment.blockResponses.filter(r => r.block === 1).length
-  const b2Count = assessment.blockResponses.filter(r => r.block === 2).length
+  const b2MainCount = assessment.blockResponses.filter(r => r.block === 2 && !r.isControl).length
+  const b2ControlDone = assessment.block2ControlCompletedAt != null
 
   if (b1Count < 8) redirect(`/eval/${params.token}/block1`)
-  if (b2Count < 9) redirect(`/eval/${params.token}/block2`)
+  if (b2MainCount < 8) redirect(`/eval/${params.token}/block2`)
+  if (!b2ControlDone) redirect(`/eval/${params.token}/block2-control`)
   if (!assessment.block3Text) redirect(`/eval/${params.token}/block3`)
 
   redirect(`/eval/${params.token}/done`)

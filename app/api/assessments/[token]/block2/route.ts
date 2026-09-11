@@ -1,9 +1,9 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { db } from '@/lib/db'
-import { ALL_KEYS, WORD_MAP } from '@/lib/instrument/words'
+import { MAIN_KEYS, WORD_MAP } from '@/lib/instrument/words'
 import type { Dimension } from '@prisma/client'
 
-const BLOCK2_LIMIT = 9
+const BLOCK2_LIMIT = 8
 
 export async function POST(
   req: NextRequest,
@@ -15,7 +15,7 @@ export async function POST(
   if (
     !Array.isArray(selectedKeys) ||
     selectedKeys.length !== BLOCK2_LIMIT ||
-    !selectedKeys.every((k: unknown) => typeof k === 'string' && ALL_KEYS.has(k as string)) ||
+    !selectedKeys.every((k: unknown) => typeof k === 'string' && MAIN_KEYS.has(k as string)) ||
     new Set(selectedKeys).size !== selectedKeys.length
   ) {
     return NextResponse.json(
@@ -33,7 +33,7 @@ export async function POST(
   if (assessment.status === 'COMPLETED') return NextResponse.json({ error: 'Completada' }, { status: 409 })
 
   await db.$transaction([
-    db.blockResponse.deleteMany({ where: { assessmentId: assessment.id, block: 2 } }),
+    db.blockResponse.deleteMany({ where: { assessmentId: assessment.id, block: 2, isControl: false } }),
     db.blockResponse.createMany({
       data: (selectedKeys as string[]).map(key => {
         const word = WORD_MAP.get(key)!

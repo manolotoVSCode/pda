@@ -90,9 +90,11 @@ Consultor crea candidato + asignación a cargo
 Candidato abre /eval/[token]
     → GET verifica token válido y status != COMPLETED
     → POST /api/assessments/[token]/start → registra startedAt, status = IN_PROGRESS
-    → Bloque 1 (6 grupos) → PATCH block1 (guardado por grupo)
-    → Bloque 2 (7 grupos) → PATCH block2 (guardado por grupo)
-    → Bloque 3 (texto libre) → PATCH block3 → registra completedAt,
+    → Bloque 1: selección libre de 8 palabras de 24 → POST block1
+    → Bloque 2 Parte 1: selección libre de 8 palabras de 24 principales → POST block2
+    → Bloque 2 Parte 2: decisión explícita sí/no sobre 4 palabras de control
+      (una por una, obligatoria antes de avanzar) → POST block2/control
+    → Bloque 3 (texto libre) → POST block3 → registra completedAt,
       durationSeconds, status = COMPLETED
 
 Consultor abre /admin/reports/[assessmentId]
@@ -400,21 +402,27 @@ Umbral de interpretación: maskIndex > 40 → señal de alto esfuerzo de adaptac
 
 ### 5.6 Índice de Consistencia (`consistency.ts`)
 
-**Paso 1 — Contradicciones del grupo de control:**
+El instrumento verifica consistencia mediante 4 pares de control, uno por dimensión. Cada par consiste en una palabra principal del Bloque 2 (D1, I1, S1, C1) y su sinónimo semántico presentado de forma separada en la Parte 2 del Bloque 2.
 
-El grupo 7 del Bloque 2 genera exactamente dos verificaciones posibles por sesión: la dimensión marcada como `mostDim` y la marcada como `leastDim`.
+**Estructura del par:**
+- `mainKey`: palabra principal (ej. D1 = "Decidido"), seleccionada en Parte 1 junto con las otras 23 palabras principales.
+- `controlKey`: sinónimo (ej. ctrl_D = "Resuelto"), respondido en Parte 2 como decisión explícita sí/no.
 
-Para cada verificación (la dimensión `dim` del Grupo 7):
-- Obtener el sentido de `dim` en el Grupo 1 del Bloque 2 (¿fue `mostDim` o `leastDim`?).
-- Obtener el sentido de `dim` en el Grupo 7 (¿fue `mostDim` o `leastDim`?).
-- **Contradicción** = los dos sentidos son opuestos (uno es `most` y el otro es `least`).
+**Paso 1 — Contradicciones:**
+
+Un par es contradictorio si exactamente una de sus dos palabras está marcada:
 
 ```
-contradictions ∈ {0, 1, 2}
-rawConsistency = 100 − (contradictions / 2) × 100
+for each pair (mainKey, controlKey):
+  mainSelected   = mainKey ∈ block2Part1Selections
+  controlMarked  = controlKey marked YES in block2Part2
+  contradiction  = mainSelected XOR controlMarked
+
+contradictions ∈ {0, 1, 2, 3, 4}
+rawConsistency = (1 − contradictions / 4) × 100
 ```
 
-Valores posibles: 0 contradicciones → 100; 1 → 50; 2 → 0.
+Valores: 0 contradicciones → 100; 1 → 75; 2 → 50; 3 → 25; 4 → 0.
 
 **Paso 2 — Ajuste por tiempo:**
 
@@ -428,11 +436,16 @@ else:
 
 **Paso 3 — Nivel:**
 
-| Rango | Nivel |
-|-------|-------|
-| 85–100 | HIGH |
-| 60–84 | MODERATE |
-| < 60 | LOW |
+| Contradicciones | rawConsistency | Nivel |
+|-----------------|---------------|-------|
+| 0 | 100 | HIGH |
+| 1 | 75 | HIGH |
+| 2 | 50 | MODERATE |
+| 3–4 | 0–25 | LOW |
+
+**Fundamento del diseño:** al separar el presupuesto de las palabras de control del presupuesto de selección principal, la coincidencia deja de ser una restricción de presupuesto y pasa a ser una señal semántica pura. Bajo esta estructura, un respondente genuino obtiene 0–1 contradicciones con probabilidad ~95–97 % (promedio de los cuatro pares aprobados); un respondente que responde aleatoriamente en la Parte 2 obtiene 0–1 contradicciones con probabilidad ~31 %.
+
+**Limitación conocida — estrategia "siempre No":** si un evaluado responde "No" a las cuatro palabras de control sin leerlas, obtiene 0–1 contradicciones con probabilidad ~59 %, lo que puede resultar en HIGH o MODERATE aun sin haber respondido con cuidado. El mecanismo no detecta de forma fiable esta forma específica de respuesta descuidada. La presentación secuencial obligatoria (una decisión por pantalla) reduce la probabilidad de que ocurra por inercia, pero no la elimina. Este es el límite de discriminación del diseño actual con 4 pares binarios.
 
 ### 5.7 Ajuste al Cargo (`fit.ts`)
 
@@ -598,29 +611,68 @@ El texto de proyección se construye desde `NarrativeContent` (section=PROJECTIO
 
 El banco de adjetivos y la asignación de dimensiones por grupo es parte del instrumento y **no** se edita desde el panel. Los términos del Bloque 3 (diccionario léxico) sí son editables; los adjetivos de los Bloques 1 y 2 no lo son.
 
-**Grupos 1–6 (compartidos por Bloque 1 y Bloque 2 grupos principales):**
+**Banco principal — 24 palabras (Bloque 1 y Bloque 2 Parte 1):**
 
-| Grupo | D | I | S | C |
-|-------|---|---|---|---|
-| 1 | Decidido | Sociable | Paciente | Meticuloso |
-| 2 | Directo | Entusiasta | Constante | Analítico |
-| 3 | Competitivo | Persuasivo | Colaborador | Cauteloso |
-| 4 | Exigente | Expresivo | Leal | Ordenado |
-| 5 | Firme | Optimista | Sereno | Riguroso |
-| 6 | Audaz | Comunicativo | Conciliador | Reservado |
+| Clave | Palabra | Dimensión |
+|-------|---------|-----------|
+| D1 | Decidido | D |
+| D2 | Directo | D |
+| D3 | Competitivo | D |
+| D4 | Exigente | D |
+| D5 | Firme | D |
+| D6 | Audaz | D |
+| I1 | Sociable | I |
+| I2 | Entusiasta | I |
+| I3 | Persuasivo | I |
+| I4 | Expresivo | I |
+| I5 | Optimista | I |
+| I6 | Comunicativo | I |
+| S1 | Paciente | S |
+| S2 | Constante | S |
+| S3 | Colaborador | S |
+| S4 | Leal | S |
+| S5 | Sereno | S |
+| S6 | Conciliador | S |
+| C1 | Meticuloso | C |
+| C2 | Analítico | C |
+| C3 | Cauteloso | C |
+| C4 | Ordenado | C |
+| C5 | Riguroso | C |
+| C6 | Reservado | C |
 
-**Grupo 7 (solo Bloque 2, control de consistencia):**
+**Palabras de control — 4 palabras (Bloque 2 Parte 2 únicamente):**
 
-| Grupo | D | I | S | C |
-|-------|---|---|---|---|
-| 7 | Resuelto | Afable | Tranquilo | Detallista |
+Cada palabra de control es sinónimo semántico de la palabra principal de su dimensión (D1, I1, S1, C1). Se presentan separadas del banco principal para eliminar competencia de presupuesto.
 
-### 8.2 Diseño de interacción por tarjeta
+| Clave | Palabra | Par principal | Dimensión | Estado |
+|-------|---------|---------------|-----------|--------|
+| ctrl_D | Resuelto | D1 Decidido | D | ✓ Aprobado |
+| ctrl_I | Amigable | I1 Sociable | I | ✓ Aprobado |
+| ctrl_S | Sosegado | S1 Paciente | S | ✓ Aprobado |
+| ctrl_C | Detallista | C1 Meticuloso | C | ✓ Aprobado |
 
-1. Tarjeta muestra los 4 adjetivos del grupo.
-2. Evaluado toca el que **más** lo describe → ese adjetivo desaparece, la tarjeta se reduce a 3.
-3. Evaluado toca el que **menos** lo describe → avance automático al siguiente grupo, sin confirmación ni pasos intermedios.
-4. No hay botón "atrás" dentro de un bloque una vez enviado un grupo. (Decisión de diseño para reducir la posibilidad de modulación consciente.)
+### 8.2 Diseño de interacción del instrumento
+
+**Bloque 1 — selección libre:**
+1. Se presentan las 24 palabras principales en una cuadrícula de pantalla única.
+2. El evaluado marca exactamente **8 palabras** que lo describen.
+3. El contador muestra palabras restantes; cuando se alcanza el límite, las no seleccionadas se desactivan.
+4. Botón "Continuar" habilitado solo cuando hay exactamente 8 seleccionadas.
+
+**Bloque 2 Parte 1 — selección libre (banco principal):**
+1. Se presentan las mismas 24 palabras principales en una cuadrícula de pantalla única.
+2. El evaluado marca exactamente **8 palabras** que lo describen en su entorno de trabajo.
+3. Misma mecánica de contador y bloqueo que Bloque 1.
+4. Al confirmar, avanza automáticamente a la Parte 2.
+
+**Bloque 2 Parte 2 — verificación de control:**
+1. Se presentan las 4 palabras de control **una por una**, en pantallas secuenciales independientes.
+2. Cada pantalla muestra una sola palabra y dos botones: **"Sí me describe"** / **"No me describe"**.
+3. El evaluado **debe resolver cada decisión** antes de ver la siguiente; no hay opción de omitir.
+4. No hay botón "atrás" entre decisiones de control.
+5. Al completar las 4 decisiones, avanza automáticamente al Bloque 3.
+
+(La presentación secuencial obligatoria cierra la vía de evasión "marcar ninguna sin leer", que bajo selección puramente aleatoria en la parte de control produce ~1.5 contradicciones esperadas, comparable a respuesta aleatoria real.)
 
 ### 8.3 Medición de tiempo
 
