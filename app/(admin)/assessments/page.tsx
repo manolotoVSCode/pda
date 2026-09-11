@@ -6,8 +6,8 @@ type Assessment = {
   id: string
   token: string
   status: string
-  candidate: { name: string }
-  position: { name: string }
+  candidate: { name: string; lastName: string | null } | null
+  position: { name: string } | null
   report: { id: string } | null
   createdAt: string
 }
@@ -29,6 +29,11 @@ export default function AssessmentsPage() {
       .finally(() => setLoading(false))
   }, [])
 
+  function candidateName(a: Assessment): string {
+    if (!a.candidate) return '—'
+    return [a.candidate.name, a.candidate.lastName].filter(Boolean).join(' ')
+  }
+
   return (
     <main className="p-8 max-w-5xl">
       <div className="flex items-center justify-between mb-6">
@@ -48,8 +53,7 @@ export default function AssessmentsPage() {
         <table className="w-full text-sm border-collapse">
           <thead>
             <tr className="border-b border-slate-200 text-left text-slate-600">
-              <th className="py-2 pr-4">Candidato</th>
-              <th className="py-2 pr-4">Cargo</th>
+              <th className="py-2 pr-4">Persona evaluada</th>
               <th className="py-2 pr-4">Estado</th>
               <th className="py-2 pr-4">Informe</th>
               <th className="py-2"></th>
@@ -58,8 +62,7 @@ export default function AssessmentsPage() {
           <tbody>
             {assessments.map(a => (
               <tr key={a.id} className="border-b border-slate-100 hover:bg-slate-50">
-                <td className="py-3 pr-4 font-medium text-slate-800">{a.candidate.name}</td>
-                <td className="py-3 pr-4 text-slate-600">{a.position.name}</td>
+                <td className="py-3 pr-4 font-medium text-slate-800">{candidateName(a)}</td>
                 <td className="py-3 pr-4">
                   <span className={`text-xs px-2 py-0.5 rounded ${
                     a.status === 'COMPLETED' ? 'bg-green-100 text-green-700' :
