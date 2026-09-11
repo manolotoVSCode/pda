@@ -256,6 +256,37 @@ async function main() {
     })
   }
 
+  type Dimension = 'D' | 'I' | 'S' | 'C'
+  const potentialDims: Array<{ id: string; dimension: Dimension; content: string }> = [
+    {
+      id: 'potential-D',
+      dimension: 'D',
+      content: '[nombre] rinde mejor en entornos donde puede tomar decisiones con autonomía real, medir su progreso por resultados concretos, y enfrentar retos con margen para actuar rápido. Un acompañamiento útil reconoce sus logros de forma directa y evita supervisarla en exceso sobre el cómo, enfocándose en el qué.',
+    },
+    {
+      id: 'potential-I',
+      dimension: 'I',
+      content: '[nombre] rinde mejor en entornos con interacción social frecuente, variedad de proyectos, y espacio para expresar ideas antes de que estén completamente pulidas. Un acompañamiento útil reconoce sus aportes en público y le da retroalimentación con calidez, no solo con datos.',
+    },
+    {
+      id: 'potential-S',
+      dimension: 'S',
+      content: '[nombre] rinde mejor en entornos estables, con tiempo suficiente para adaptarse a los cambios y relaciones de confianza sostenidas. Un acompañamiento útil anticipa los cambios con antelación y evita presionarla a decidir bajo prisa constante.',
+    },
+    {
+      id: 'potential-C',
+      dimension: 'C',
+      content: '[nombre] rinde mejor en entornos con reglas claras, tiempo para analizar antes de actuar, y estándares de calidad bien definidos. Un acompañamiento útil entrega la información completa antes de pedir una decisión y valora la precisión de su trabajo de forma explícita.',
+    },
+  ]
+  for (const p of potentialDims) {
+    await prisma.narrativeContent.upsert({
+      where: { id: p.id },
+      update: {},
+      create: { id: p.id, section: 'POTENTIAL', dimension: p.dimension, content: p.content },
+    })
+  }
+
   console.log('Seed completo.')
 }
 
