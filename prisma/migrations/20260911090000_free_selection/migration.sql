@@ -1,4 +1,10 @@
 -- Migration: replace group-based BlockResponse with word-based selection
+
+-- Clean up all test data before restructuring (children before parents)
+DELETE FROM "Report";
+DELETE FROM "BlockResponse";
+DELETE FROM "Assessment";
+
 ALTER TABLE "BlockResponse" DROP CONSTRAINT IF EXISTS "BlockResponse_assessmentId_block_groupNumber_key";
 ALTER TABLE "BlockResponse" DROP COLUMN IF EXISTS "groupNumber";
 ALTER TABLE "BlockResponse" DROP COLUMN IF EXISTS "mostDim";
