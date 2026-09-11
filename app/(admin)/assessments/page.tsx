@@ -83,10 +83,13 @@ export default function AssessmentsPage() {
                     }} />
                   ) : '—'}
                 </td>
-                <td className="py-3">
+                <td className="py-3 flex items-center gap-3">
                   <Link href={`/assessments/${a.id}`} className="text-slate-500 hover:underline text-xs">
                     Detalle
                   </Link>
+                  <DeleteButton token={a.token} onDeleted={() =>
+                    setAssessments(prev => prev.filter(x => x.id !== a.id))
+                  } />
                 </td>
               </tr>
             ))}
@@ -97,6 +100,28 @@ export default function AssessmentsPage() {
         <Link href="/dashboard" className="text-sm text-slate-500 hover:underline">← Panel</Link>
       </div>
     </main>
+  )
+}
+
+function DeleteButton({ token, onDeleted }: { token: string; onDeleted: () => void }) {
+  const [loading, setLoading] = useState(false)
+
+  async function handleDelete() {
+    if (!window.confirm('¿Borrar esta evaluación? Esta acción no se puede deshacer.')) return
+    setLoading(true)
+    const res = await fetch(`/api/assessments/${token}`, { method: 'DELETE' })
+    if (res.ok) onDeleted()
+    else setLoading(false)
+  }
+
+  return (
+    <button
+      onClick={handleDelete}
+      disabled={loading}
+      className="text-xs text-red-500 hover:text-red-700 hover:underline disabled:opacity-50"
+    >
+      {loading ? 'Borrando...' : 'Borrar'}
+    </button>
   )
 }
 
