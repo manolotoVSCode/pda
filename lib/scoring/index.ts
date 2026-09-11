@@ -1,4 +1,4 @@
-import type { ScoringInput, ScoringResult, DimensionVector } from './types'
+import type { ScoringInput, ScoringResult } from './types'
 import { computeProfileVector } from './normalize'
 import { computeTextualProfile } from './textual'
 import { computeComposite } from './composite'
@@ -7,16 +7,7 @@ import { computeConsistency } from './consistency'
 import { computeFitScore } from './fit'
 import { computeProjection } from './projection'
 
-export interface FullScoringResult extends ScoringResult {
-  fitScore: number
-  projectionScore: number
-  riskLevel: 'LOW' | 'MEDIUM' | 'HIGH'
-}
-
-export function computeAllScores(
-  input: ScoringInput,
-  ideal: DimensionVector
-): FullScoringResult {
+export function computeAllScores(input: ScoringInput): ScoringResult {
   const pp = computeProfileVector(input.block1Responses)
   const mainBlock2 = input.block2Responses.filter(r => !r.isControl)
   const pi = computeProfileVector(mainBlock2)
@@ -25,19 +16,8 @@ export function computeAllScores(
   const maskIndex = computeMaskIndex(pp, pi)
   const { contradictions, consistencyIndex, level: consistencyLevel } =
     computeConsistency(input.block2Responses, input.durationSeconds)
-  const fitScore = computeFitScore(pc, ideal)
-  const { projectionScore, riskLevel } = computeProjection(fitScore, maskIndex, pc)
 
-  return {
-    pp, pi, pt, pc,
-    maskIndex,
-    consistencyIndex,
-    consistencyLevel,
-    contradictions,
-    fitScore,
-    projectionScore,
-    riskLevel,
-  }
+  return { pp, pi, pt, pc, maskIndex, consistencyIndex, consistencyLevel, contradictions }
 }
 
 export type { ScoringInput, ScoringResult, DimensionVector } from './types'
