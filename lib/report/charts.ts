@@ -34,9 +34,9 @@ export function buildBarChartSvg(pc: DimensionVector): string {
     const barW = (val / 100) * CHART_W
     const y = MARGIN_T + i * (BAR_H + GAP)
     return [
-      `<text x="${LABEL_W - 8}" y="${y + BAR_H / 2 + 5}" text-anchor="end" font-family="sans-serif" font-size="13" fill="#333">${DIM_LABELS[dim]}</text>`,
+      `<text x="${LABEL_W - 8}" y="${y + BAR_H / 2 + 5}" text-anchor="end" font-family="Helvetica" font-size="13" fill="#333">${DIM_LABELS[dim]}</text>`,
       `<rect x="${LABEL_W}" y="${y}" width="${barW.toFixed(1)}" height="${BAR_H}" fill="${DIM_COLORS[dim]}" rx="3"/>`,
-      `<text x="${LABEL_W + barW + 6}" y="${y + BAR_H / 2 + 5}" font-family="sans-serif" font-size="12" fill="#555">${Math.round(val)}</text>`,
+      `<text x="${LABEL_W + barW + 6}" y="${y + BAR_H / 2 + 5}" font-family="Helvetica" font-size="12" fill="#555">${Math.round(val)}</text>`,
     ].join('\n')
   }).join('\n')
 
@@ -85,7 +85,7 @@ export function buildRadarChartSvg(pp: DimensionVector, pi: DimensionVector): st
   const dimLabels = DIMS.map((dim, i) => {
     const [x, y] = pt(i, 115)
     const [ox, oy] = labelOffsets[dim]
-    return `<text x="${(x + ox).toFixed(2)}" y="${(y + oy).toFixed(2)}" text-anchor="middle" dominant-baseline="middle" font-family="sans-serif" font-size="11" fill="#475569">${DIM_LABELS[dim]}</text>`
+    return `<text x="${(x + ox).toFixed(2)}" y="${(y + oy).toFixed(2)}" text-anchor="middle" dominant-baseline="middle" font-family="Helvetica" font-size="11" fill="#475569">${DIM_LABELS[dim]}</text>`
   }).join('\n')
 
   return `<svg xmlns="http://www.w3.org/2000/svg" width="${SIZE}" height="${SIZE}" viewBox="0 0 ${SIZE} ${SIZE}">
@@ -95,8 +95,8 @@ export function buildRadarChartSvg(pp: DimensionVector, pi: DimensionVector): st
   <path d="${polygon(pp)}" fill="rgba(224,92,58,0.15)" stroke="#e05c3a" stroke-width="2"/>
   ${dimLabels}
   <circle cx="${CX - 70}" cy="${SIZE - 18}" r="5" fill="#e05c3a"/>
-  <text x="${CX - 62}" y="${SIZE - 14}" font-family="sans-serif" font-size="10" fill="#333">Perfil Percibido</text>
+  <text x="${CX - 62}" y="${SIZE - 14}" font-family="Helvetica" font-size="10" fill="#333">Perfil Percibido</text>
   <circle cx="${CX + 30}" cy="${SIZE - 18}" r="5" fill="#4a7fbf"/>
-  <text x="${CX + 38}" y="${SIZE - 14}" font-family="sans-serif" font-size="10" fill="#333">Perfil Interno</text>
+  <text x="${CX + 38}" y="${SIZE - 14}" font-family="Helvetica" font-size="10" fill="#333">Perfil Interno</text>
 </svg>`
 }

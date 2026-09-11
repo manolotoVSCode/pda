@@ -1,3 +1,4 @@
+import 'dotenv/config'
 import { PrismaClient } from '@prisma/client'
 import { PrismaPg } from '@prisma/adapter-pg'
 import { computeAllScores } from '../lib/scoring'
@@ -148,8 +149,8 @@ async function main() {
     ['candidateName incluye apellido', candidateName.includes('Prueba')],
     ['PP.D=100 (6/6 D en B1)', Math.abs(scores.pp.D - 100) < 0.01],
     ['PI.D=100 (6/6 D en B2 main)', Math.abs(scores.pi.D - 100) < 0.01],
-    ['contradictions=0 (ctrl_D y D1 ambos marcados)', scores.contradictions === 0],
-    ['consistencyLevel=HIGH', scores.consistencyLevel === 'HIGH'],
+    ['contradictions=2 (ctrl_I/I1 y ctrl_S/S1 discordantes)', scores.contradictions === 2],
+    ['consistencyLevel=LOW (2 contradicciones → rawConsistency=50)', scores.consistencyLevel === 'LOW'],
     ['dominantTraits tiene 4 entradas', sections.dominantTraits.length === 4],
     ['dominantTraits ordenados por distancia desc', sections.dominantTraits[0].distance >= sections.dominantTraits[1].distance],
     ['potential contiene nombre', sections.potential.includes('Ana')],
