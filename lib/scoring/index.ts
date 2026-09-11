@@ -3,9 +3,9 @@ import { computeProfileVector } from './normalize'
 import { computeTextualProfile } from './textual'
 import { computeComposite } from './composite'
 import { computeMaskIndex } from './mask'
-import { computeConsistency, type ConsistencyResult } from './consistency'
+import { computeConsistency } from './consistency'
 import { computeFitScore } from './fit'
-import { computeProjection, type ProjectionResult } from './projection'
+import { computeProjection } from './projection'
 
 export interface FullScoringResult extends ScoringResult {
   fitScore: number
