@@ -27,6 +27,7 @@ type Props = {
   barChartSvg: string
   radarChartSvg: string
   tendenciasChartSvg: string
+  wheelChartSvg: string
   logoDataUri?: string
 }
 
@@ -81,6 +82,19 @@ function svgToDataUri(svg: string): string {
   return `data:image/svg+xml;base64,${Buffer.from(svg).toString('base64')}`
 }
 
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+function BulletSection({ text, style }: { text: string; style: any }) {
+  if (!text.includes('\n•')) {
+    return <Text style={style}>{text}</Text>
+  }
+  const parts = text.split('\n•').map((p, i) => (i === 0 ? p : `• ${p}`))
+  return (
+    <View>
+      {parts.map((part, i) => part.trim() ? <Text key={i} style={style}>{part.trim()}</Text> : null)}
+    </View>
+  )
+}
+
 function consistencyLabel(level: 'HIGH' | 'MODERATE' | 'LOW'): string {
   return level === 'HIGH' ? 'Alta' : level === 'MODERATE' ? 'Moderada' : 'Baja'
 }
@@ -90,7 +104,7 @@ export function ReportDocument(props: Props) {
     candidateName, generatedAt,
     sections, pc, pp, pi,
     maskIndex, consistencyIndex, consistencyLevel, durationSeconds,
-    barChartSvg, radarChartSvg, tendenciasChartSvg, logoDataUri,
+    barChartSvg, radarChartSvg, tendenciasChartSvg, wheelChartSvg, logoDataUri,
   } = props
 
   const durationLabel = durationSeconds != null
@@ -183,6 +197,8 @@ export function ReportDocument(props: Props) {
             </View>
           ))}
         </View>
+        {/* eslint-disable-next-line jsx-a11y/alt-text -- Image es de @react-pdf/renderer */}
+        <Image style={{ ...s.chart, width: 340, height: 300 }} src={svgToDataUri(wheelChartSvg)} />
 
         {/* 4. Radar: Perfil Percibido vs Perfil Interno */}
         <Text style={s.sectionTitle}>
@@ -257,14 +273,14 @@ export function ReportDocument(props: Props) {
         <Text style={s.sectionTitle}>
           <Text style={s.sectionNum}>9. </Text>Potencial y Recomendaciones de Desarrollo
         </Text>
-        <Text style={s.body}>{sections.potential}</Text>
+        <BulletSection text={sections.potential} style={s.body} />
 
         {/* 10. Tendencias de comportamiento */}
         <Text style={s.sectionTitle}>
           <Text style={s.sectionNum}>10. </Text>Tendencias de Comportamiento
         </Text>
         {/* eslint-disable-next-line jsx-a11y/alt-text -- Image es de @react-pdf/renderer */}
-        <Image style={{ ...s.chart, width: 420, height: 250 }} src={svgToDataUri(tendenciasChartSvg)} />
+        <Image style={{ ...s.chart, width: 420, height: 262 }} src={svgToDataUri(tendenciasChartSvg)} />
 
         {/* 11. Nota de uso */}
         <Text style={s.sectionTitle}>

@@ -7,7 +7,7 @@ import { renderToBuffer } from '@react-pdf/renderer'
 import { ReportDocument } from '@/lib/report/pdf'
 import { selectInterviewQuestions } from '@/lib/report/questions'
 import { buildReportSections, type NarrativeRow } from '@/lib/report/narrative'
-import { buildBarChartSvg, buildRadarChartSvg, buildTendenciasChartSvg } from '@/lib/report/charts'
+import { buildBarChartSvg, buildRadarChartSvg, buildTendenciasChartSvg, buildWheelChartSvg } from '@/lib/report/charts'
 import React from 'react'
 import fs from 'fs'
 import path from 'path'
@@ -66,6 +66,7 @@ export async function GET(
   const barChartSvg = buildBarChartSvg(pc)
   const radarChartSvg = buildRadarChartSvg(pp, pi)
   const tendenciasChartSvg = buildTendenciasChartSvg(pc)
+  const wheelChartSvg = buildWheelChartSvg(pc)
 
   const logoPath = path.join(process.cwd(), 'public', 'logo-ackermann.png')
   const logoDataUri = fs.existsSync(logoPath)
@@ -86,6 +87,7 @@ export async function GET(
       barChartSvg,
       radarChartSvg,
       tendenciasChartSvg,
+      wheelChartSvg,
       logoDataUri,
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     }) as any,

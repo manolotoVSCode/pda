@@ -24,10 +24,28 @@ const DIM_LIGHT_COLORS: Record<Dimension, string> = {
 }
 
 const TENDENCIAS_LABELS: Record<Dimension, string> = {
-  D: 'Orientación competitiva a resultados',
+  D: 'Orientación a resultados y decisión directa',
   I: 'Persuasión y comunicación interpersonal',
   S: 'Atención y escucha',
   C: 'Seguimiento de normas y procedimientos',
+}
+
+// Behavioral poles for each end of the tendencias track.
+// These describe what the dimension looks like at its low and high expression,
+// replacing generic "mayor/menor esfuerzo" labels.
+const TENDENCIAS_POLES: Record<Dimension, { low: string; high: string }> = {
+  D: { low: 'Reflexivo · Cauteloso',     high: 'Decidido · Directo' },
+  I: { low: 'Reservado · Independiente', high: 'Comunicativo · Persuasivo' },
+  S: { low: 'Dinámico · Adaptable',      high: 'Constante · Paciente' },
+  C: { low: 'Flexible · Pragmático',     high: 'Sistemático · Riguroso' },
+}
+
+// Descriptive sub-labels for each axis of the wheel chart
+const WHEEL_AXIS_LABELS: Record<Dimension, string> = {
+  D: 'Decisión · Impacto',
+  I: 'Conexión · Persuasión',
+  S: 'Constancia · Apoyo',
+  C: 'Análisis · Rigor',
 }
 
 const DIMS: Dimension[] = ['D', 'I', 'S', 'C']
@@ -61,12 +79,102 @@ export function buildBarChartSvg(pc: DimensionVector): string {
 </svg>`
 }
 
+/**
+ * Polar area (rose) chart for the four PC dimensions.
+ * Each 90° sector's radius is proportional to the dimension's PC score.
+ * D=top, I=right, S=bottom, C=left — using our own descriptive axis labels,
+ * not the proprietary R·E·P·N·A schema of any other instrument.
+ */
+export function buildWheelChartSvg(pc: DimensionVector): string {
+  const W = 340
+  const H = 300
+  const CX = 170  // horizontal center (extra width accommodates side labels)
+  const CY = 150
+  const R = 90    // max radius
+
+  const toRad = (deg: number) => (deg * Math.PI) / 180
+  const SQ2 = Math.SQRT1_2  // cos/sin of 45° = 0.7071
+
+  // Build a 90° sector path from startDeg to startDeg+90 (SVG convention: 0°=right, clockwise)
+  function makeSector(dim: Dimension, startDeg: number): string {
+    const r = Math.max((pc[dim] / 100) * R, 3)
+    const x1 = (CX + r * Math.cos(toRad(startDeg))).toFixed(2)
+    const y1 = (CY + r * Math.sin(toRad(startDeg))).toFixed(2)
+    const x2 = (CX + r * Math.cos(toRad(startDeg + 90))).toFixed(2)
+    const y2 = (CY + r * Math.sin(toRad(startDeg + 90))).toFixed(2)
+    return `<path d="M ${CX},${CY} L ${x1},${y1} A ${r.toFixed(2)},${r.toFixed(2)} 0 0,1 ${x2},${y2} Z" fill="${DIM_COLORS[dim]}" opacity="0.83"/>`
+  }
+
+  // Score callout at the midpoint angle inside the sector
+  function scoreLabel(dim: Dimension, midDeg: number): string {
+    const r = Math.max((pc[dim] / 100) * R, 3)
+    if (r < 22) return ''
+    const lx = (CX + r * 0.60 * Math.cos(toRad(midDeg))).toFixed(1)
+    const ly = (CY + r * 0.60 * Math.sin(toRad(midDeg)) + 3.5).toFixed(1)
+    return `<text x="${lx}" y="${ly}" text-anchor="middle" font-family="Helvetica-Bold" font-size="9" fill="white" opacity="0.95">${Math.round(pc[dim])}</text>`
+  }
+
+  // Grid rings at 25 / 50 / 75 / 100% of R
+  const grid = [0.25, 0.50, 0.75, 1.0].map(pct => {
+    const r = (pct * R).toFixed(1)
+    const stroke = pct === 1 ? '#c8d4e4' : '#e8edf4'
+    const sw = pct === 1 ? 1 : 0.75
+    return `<circle cx="${CX}" cy="${CY}" r="${r}" fill="none" stroke="${stroke}" stroke-width="${sw}"/>`
+  }).join('\n  ')
+
+  // Diagonal dividers between sectors
+  const dividers = [
+    `<line x1="${(CX - R * SQ2).toFixed(1)}" y1="${(CY - R * SQ2).toFixed(1)}" x2="${(CX + R * SQ2).toFixed(1)}" y2="${(CY + R * SQ2).toFixed(1)}" stroke="#d0d9e8" stroke-width="0.75"/>`,
+    `<line x1="${(CX + R * SQ2).toFixed(1)}" y1="${(CY - R * SQ2).toFixed(1)}" x2="${(CX - R * SQ2).toFixed(1)}" y2="${(CY + R * SQ2).toFixed(1)}" stroke="#d0d9e8" stroke-width="0.75"/>`,
+  ].join('\n  ')
+
+  // Sectors: D=top(225°→315°), I=right(315°→45°), S=bottom(45°→135°), C=left(135°→225°)
+  const sectors = [
+    makeSector('D', 225),
+    makeSector('I', 315),
+    makeSector('S', 45),
+    makeSector('C', 135),
+  ].join('\n  ')
+
+  const scores = [
+    scoreLabel('D', 270),
+    scoreLabel('I', 0),
+    scoreLabel('S', 90),
+    scoreLabel('C', 180),
+  ].filter(Boolean).join('\n  ')
+
+  const LR = R + 18  // distance from center to axis label
+
+  const axisLabels = [
+    // D — top
+    `<text x="${CX}" y="${(CY - LR).toFixed(1)}" text-anchor="middle" font-family="Helvetica-Bold" font-size="9" fill="${DIM_COLORS['D']}">${DIM_LABELS['D'].toUpperCase()}</text>`,
+    `<text x="${CX}" y="${(CY - LR + 12).toFixed(1)}" text-anchor="middle" font-family="Helvetica" font-size="7.5" fill="#94a3b8">${WHEEL_AXIS_LABELS['D']}</text>`,
+    // I — right
+    `<text x="${(CX + LR + 2).toFixed(1)}" y="${(CY - 4).toFixed(1)}" text-anchor="start" font-family="Helvetica-Bold" font-size="9" fill="${DIM_COLORS['I']}">${DIM_LABELS['I'].toUpperCase()}</text>`,
+    `<text x="${(CX + LR + 2).toFixed(1)}" y="${(CY + 8).toFixed(1)}" text-anchor="start" font-family="Helvetica" font-size="7.5" fill="#94a3b8">${WHEEL_AXIS_LABELS['I']}</text>`,
+    // S — bottom
+    `<text x="${CX}" y="${(CY + LR + 13).toFixed(1)}" text-anchor="middle" font-family="Helvetica-Bold" font-size="9" fill="${DIM_COLORS['S']}">${DIM_LABELS['S'].toUpperCase()}</text>`,
+    `<text x="${CX}" y="${(CY + LR + 25).toFixed(1)}" text-anchor="middle" font-family="Helvetica" font-size="7.5" fill="#94a3b8">${WHEEL_AXIS_LABELS['S']}</text>`,
+    // C — left
+    `<text x="${(CX - LR - 2).toFixed(1)}" y="${(CY - 4).toFixed(1)}" text-anchor="end" font-family="Helvetica-Bold" font-size="9" fill="${DIM_COLORS['C']}">${DIM_LABELS['C'].toUpperCase()}</text>`,
+    `<text x="${(CX - LR - 2).toFixed(1)}" y="${(CY + 8).toFixed(1)}" text-anchor="end" font-family="Helvetica" font-size="7.5" fill="#94a3b8">${WHEEL_AXIS_LABELS['C']}</text>`,
+  ].join('\n  ')
+
+  return `<svg xmlns="http://www.w3.org/2000/svg" width="${W}" height="${H}" viewBox="0 0 ${W} ${H}">
+  ${grid}
+  ${dividers}
+  ${sectors}
+  <circle cx="${CX}" cy="${CY}" r="3" fill="white" opacity="0.9"/>
+  ${scores}
+  ${axisLabels}
+</svg>`
+}
+
 export function buildRadarChartSvg(pp: DimensionVector, pi: DimensionVector): string {
   const SIZE = 300
   const CX = SIZE / 2
   const CY = SIZE / 2
   const R = 100
-  // Axes: D=top(270°), I=right(0°), S=bottom(90°), C=left(180°)
   const anglesRad = [270, 0, 90, 180].map(deg => (deg * Math.PI) / 180)
 
   function pt(dimIdx: number, val: number): [number, number] {
@@ -115,12 +223,19 @@ export function buildRadarChartSvg(pp: DimensionVector, pi: DimensionVector): st
 </svg>`
 }
 
+/**
+ * Horizontal track chart for behavioral tendencies.
+ * Each dimension shows:
+ *   - A colored badge (bar + dim code + descriptive label)
+ *   - Two behavioral poles at each extreme (low = left, high = right)
+ *   - A gradient-filled track up to the score position
+ *   - A white tick mark at the neutral midpoint (50)
+ *   - A circle indicator at the score position
+ */
 export function buildTendenciasChartSvg(pc: DimensionVector): string {
   const W = 420
-  const SLIDER_H = 65
-  const TRACK_Y = 22  // track top relative to each slider block
-  const TRACK_H = 10
-  const H = DIMS.length * SLIDER_H - 10  // last slider needs no trailing gap
+  const SLIDER_H = 68
+  const H = DIMS.length * SLIDER_H - 10
 
   const gradDefs = DIMS.map(dim => `
     <linearGradient id="gt-${dim}" x1="0%" y1="0%" x2="100%" y2="0%">
@@ -130,21 +245,27 @@ export function buildTendenciasChartSvg(pc: DimensionVector): string {
 
   const sliders = DIMS.map((dim, i) => {
     const baseY = i * SLIDER_H
-    const trackTop = baseY + TRACK_Y
+    const trackY = baseY + 26
+    const trackH = 9
     const indicatorX = (pc[dim] / 100) * W
-    const circleY = trackTop - 4
-    const extremeY = trackTop + TRACK_H + 14
+    const circleY = trackY + trackH / 2
+    const neutralX = W / 2
+    const poles = TENDENCIAS_POLES[dim]
     const divider = i < DIMS.length - 1
-      ? `<line x1="0" y1="${baseY + SLIDER_H - 5}" x2="${W}" y2="${baseY + SLIDER_H - 5}" stroke="#f1f5f9" stroke-width="1"/>`
+      ? `<line x1="0" y1="${baseY + SLIDER_H - 6}" x2="${W}" y2="${baseY + SLIDER_H - 6}" stroke="#f1f5f9" stroke-width="1"/>`
       : ''
+
     return `
-  <text x="0" y="${baseY + 14}" font-family="Helvetica-Bold" font-size="11" fill="#475569">${TENDENCIAS_LABELS[dim]}</text>
-  <text x="${W}" y="${baseY + 14}" font-family="Helvetica-Bold" font-size="12" fill="${DIM_COLORS[dim]}" text-anchor="end">${Math.round(pc[dim])}</text>
-  <rect x="0" y="${trackTop}" width="${W}" height="${TRACK_H}" rx="5" fill="url(#gt-${dim})"/>
-  <rect x="${(indicatorX - 1.5).toFixed(1)}" y="${trackTop - 2}" width="3" height="${TRACK_H + 4}" rx="1.5" fill="white"/>
-  <circle cx="${indicatorX.toFixed(1)}" cy="${circleY}" r="6" fill="${DIM_COLORS[dim]}" stroke="white" stroke-width="2"/>
-  <text x="0" y="${extremeY}" font-family="Helvetica" font-size="9" fill="#94a3b8">Mayor esfuerzo</text>
-  <text x="${W}" y="${extremeY}" font-family="Helvetica" font-size="9" fill="#94a3b8" text-anchor="end">Menor esfuerzo</text>
+  <rect x="0" y="${baseY + 2}" width="3" height="13" rx="1.5" fill="${DIM_COLORS[dim]}"/>
+  <text x="9" y="${baseY + 13}" font-family="Helvetica-Bold" font-size="10" fill="${DIM_COLORS[dim]}">${dim}</text>
+  <text x="22" y="${baseY + 13}" font-family="Helvetica" font-size="10" fill="#475569">· ${TENDENCIAS_LABELS[dim]}</text>
+  <text x="${W}" y="${baseY + 13}" font-family="Helvetica-Bold" font-size="11" fill="${DIM_COLORS[dim]}" text-anchor="end">${Math.round(pc[dim])}</text>
+  <text x="0" y="${baseY + 23}" font-family="Helvetica" font-size="8" fill="#94a3b8">${poles.low}</text>
+  <text x="${W}" y="${baseY + 23}" font-family="Helvetica" font-size="8" fill="#94a3b8" text-anchor="end">${poles.high}</text>
+  <rect x="0" y="${trackY}" width="${W}" height="${trackH}" rx="4.5" fill="#f1f5f9"/>
+  <rect x="0" y="${trackY}" width="${indicatorX.toFixed(1)}" height="${trackH}" rx="4.5" fill="url(#gt-${dim})"/>
+  <rect x="${(neutralX - 1).toFixed(1)}" y="${trackY - 2}" width="2" height="${trackH + 4}" rx="1" fill="white" opacity="0.85"/>
+  <circle cx="${indicatorX.toFixed(1)}" cy="${circleY.toFixed(1)}" r="6" fill="${DIM_COLORS[dim]}" stroke="white" stroke-width="2"/>
   ${divider}`
   }).join('')
 
