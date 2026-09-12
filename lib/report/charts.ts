@@ -30,14 +30,14 @@ const TENDENCIAS_LABELS: Record<Dimension, string> = {
   C: 'Seguimiento de normas y procedimientos',
 }
 
-// Behavioral poles for each end of the tendencias track.
-// These describe what the dimension looks like at its low and high expression,
-// replacing generic "mayor/menor esfuerzo" labels.
+// Labels for the two extremes of the tendencias track.
+// Left (low score) = Mayor esfuerzo: the person has to consciously push toward this dimension.
+// Right (high score) = Menor esfuerzo: these behaviors come naturally to the person.
 const TENDENCIAS_POLES: Record<Dimension, { low: string; high: string }> = {
-  D: { low: 'Reflexivo · Cauteloso',     high: 'Decidido · Directo' },
-  I: { low: 'Reservado · Independiente', high: 'Comunicativo · Persuasivo' },
-  S: { low: 'Dinámico · Adaptable',      high: 'Constante · Paciente' },
-  C: { low: 'Flexible · Pragmático',     high: 'Sistemático · Riguroso' },
+  D: { low: 'Mayor esfuerzo', high: 'Menor esfuerzo' },
+  I: { low: 'Mayor esfuerzo', high: 'Menor esfuerzo' },
+  S: { low: 'Mayor esfuerzo', high: 'Menor esfuerzo' },
+  C: { low: 'Mayor esfuerzo', high: 'Menor esfuerzo' },
 }
 
 // Descriptive sub-labels for each axis of the wheel chart
