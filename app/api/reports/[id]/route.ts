@@ -13,10 +13,18 @@ export async function POST(
   _req: Request,
   { params }: { params: { id: string } },
 ) {
+  try {
+    return await generateReport(params.id)
+  } catch (err) {
+    console.error('[POST /api/reports] unhandled error:', err)
+    const message = err instanceof Error ? err.message : String(err)
+    return NextResponse.json({ error: `Internal error: ${message}` }, { status: 500 })
+  }
+}
+
+async function generateReport(assessmentId: string) {
   const session = await getIronSession<SessionData>(cookies(), sessionOptions)
   if (!session.isAdmin) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
-
-  const assessmentId = params.id
 
   const assessment = await db.assessment.findUnique({
     where: { id: assessmentId },
