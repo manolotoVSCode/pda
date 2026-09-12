@@ -1,6 +1,11 @@
+import type { Metadata } from 'next'
 import { db } from '@/lib/db'
 import { notFound } from 'next/navigation'
 import Image from 'next/image'
+
+export const metadata: Metadata = {
+  robots: { index: false, follow: false },
+}
 
 export default async function EvalLayout({
   children,
