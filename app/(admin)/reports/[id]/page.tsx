@@ -155,21 +155,19 @@ export default async function ReportPage({ params }: { params: { id: string } })
         ))}
       </section>
 
-      {/* 6–8. Secciones narrativas */}
-      {[
-        { num: 6, title: 'Estilo de Comunicación', text: sections.communication },
-        { num: 7, title: 'Motivadores y Desmotivadores', text: sections.motivators },
-        { num: 8, title: 'Comportamiento bajo Presión', text: sections.pressure },
-      ].map(s => (
-        <section key={s.num} className="mb-6">
-          <h2 className="text-lg font-semibold text-slate-700 border-b border-slate-200 pb-1 mb-3">{s.num}. {s.title}</h2>
-          <p className="text-sm text-slate-700">{s.text}</p>
-        </section>
-      ))}
-
-      {/* 9. Señales de Alerta */}
+      {/* 6. Descripción del Perfil */}
       <section className="mb-6">
-        <h2 className="text-lg font-semibold text-slate-700 border-b border-slate-200 pb-1 mb-3">9. Señales de Alerta</h2>
+        <h2 className="text-lg font-semibold text-slate-700 border-b border-slate-200 pb-1 mb-3">6. Descripción del Perfil</h2>
+        <div className="space-y-4">
+          {sections.profileDescription.split('\n\n').map((para, i) => (
+            <p key={i} className="text-sm text-slate-700">{para}</p>
+          ))}
+        </div>
+      </section>
+
+      {/* 7. Señales de Alerta */}
+      <section className="mb-6">
+        <h2 className="text-lg font-semibold text-slate-700 border-b border-slate-200 pb-1 mb-3">7. Señales de Alerta</h2>
         <p className="text-sm text-slate-700 mb-3">{sections.alerts}</p>
         {report.maskIndex > 40 ? (
           <div className="bg-amber-50 border border-amber-300 rounded p-3 text-sm text-amber-800">
@@ -182,9 +180,9 @@ export default async function ReportPage({ params }: { params: { id: string } })
         )}
       </section>
 
-      {/* 10. Preguntas de profundización */}
+      {/* 8. Preguntas de profundización */}
       <section className="mb-6">
-        <h2 className="text-lg font-semibold text-slate-700 border-b border-slate-200 pb-1 mb-3">10. Preguntas de Profundización</h2>
+        <h2 className="text-lg font-semibold text-slate-700 border-b border-slate-200 pb-1 mb-3">8. Preguntas de Profundización</h2>
         <ol className="list-decimal list-inside space-y-2">
           {sections.interviewQuestions.map((q, i) => (
             <li key={i} className="text-sm text-slate-700">{q}</li>
@@ -192,21 +190,21 @@ export default async function ReportPage({ params }: { params: { id: string } })
         </ol>
       </section>
 
-      {/* 11. Potencial */}
+      {/* 9. Potencial */}
       <section className="mb-6">
-        <h2 className="text-lg font-semibold text-slate-700 border-b border-slate-200 pb-1 mb-3">11. Potencial y Recomendaciones de Desarrollo</h2>
+        <h2 className="text-lg font-semibold text-slate-700 border-b border-slate-200 pb-1 mb-3">9. Potencial y Recomendaciones de Desarrollo</h2>
         <p className="text-sm text-slate-700">{sections.potential}</p>
       </section>
 
-      {/* 12. Tendencias de comportamiento */}
+      {/* 10. Tendencias de comportamiento */}
       <section className="mb-6">
-        <h2 className="text-lg font-semibold text-slate-700 border-b border-slate-200 pb-1 mb-3">12. Tendencias de Comportamiento</h2>
+        <h2 className="text-lg font-semibold text-slate-700 border-b border-slate-200 pb-1 mb-3">10. Tendencias de Comportamiento</h2>
         <div dangerouslySetInnerHTML={{ __html: tendenciasSvg }} />
       </section>
 
-      {/* 13. Nota de uso */}
+      {/* 11. Nota de uso */}
       <section className="mb-6">
-        <h2 className="text-lg font-semibold text-slate-700 border-b border-slate-200 pb-1 mb-3">13. Nota de Uso</h2>
+        <h2 className="text-lg font-semibold text-slate-700 border-b border-slate-200 pb-1 mb-3">11. Nota de Uso</h2>
         <p className="text-xs text-slate-500 italic">
           Este informe describe el estilo conductual de la persona evaluada y no mide habilidades, conocimientos ni garantiza desempeño en ningún contexto específico. El instrumento está basado en la teoría pública DISC (Marston, 1928) y representa una arquitectura de trabajo no validada psicométricamente. Los resultados deben interpretarse como orientación y complementarse con otras fuentes de información.
         </p>

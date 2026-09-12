@@ -1,0 +1,2 @@
+-- Add PROFILE_DESCRIPTION value to NarrativeSection enum
+ALTER TYPE "NarrativeSection" ADD VALUE IF NOT EXISTS 'PROFILE_DESCRIPTION';

@@ -15,12 +15,12 @@ type Template = {
 
 const SECTION_LABELS: Record<string, string> = {
   INTENSITY: 'Modificador de intensidad',
-  COMMUNICATION: 'Estilo de comunicación',
-  MOTIVATORS: 'Motivadores y desmotivadores',
-  PRESSURE: 'Comportamiento bajo presión',
+  PROFILE_DESCRIPTION: 'Descripción del Perfil',
   ALERTS: 'Señales de alerta',
   INTERVIEW_QUESTIONS: 'Preguntas de entrevista',
   PROJECTION: 'Proyección de desempeño',
+  POTENTIAL: 'Potencial y recomendaciones',
+  GAP_ANALYSIS: 'Análisis de rasgos dominantes',
 }
 
 const DIM_LABELS: Record<string, string> = {

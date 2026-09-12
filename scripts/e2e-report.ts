@@ -155,34 +155,26 @@ async function main() {
     console.log()
   }
 
-  console.log('\n6. ESTILO DE COMUNICACIÓN')
+  console.log('\n6. DESCRIPCIÓN DEL PERFIL')
   console.log('-'.repeat(40))
-  console.log(sections.communication)
+  console.log(sections.profileDescription)
 
-  console.log('\n7. MOTIVADORES Y DESMOTIVADORES')
-  console.log('-'.repeat(40))
-  console.log(sections.motivators)
-
-  console.log('\n8. COMPORTAMIENTO BAJO PRESIÓN')
-  console.log('-'.repeat(40))
-  console.log(sections.pressure)
-
-  console.log('\n9. SEÑALES DE ALERTA')
+  console.log('\n7. SEÑALES DE ALERTA')
   console.log('-'.repeat(40))
   console.log(sections.alerts)
 
-  console.log('\n10. PREGUNTAS DE PROFUNDIZACIÓN')
+  console.log('\n8. PREGUNTAS DE PROFUNDIZACIÓN')
   console.log('-'.repeat(40))
   console.log(`Total: ${sections.interviewQuestions.length} preguntas`)
   sections.interviewQuestions.forEach((q, i) => {
     console.log(`${i + 1}. ${q}`)
   })
 
-  console.log('\n11. POTENCIAL Y RECOMENDACIONES DE DESARROLLO')
+  console.log('\n9. POTENCIAL Y RECOMENDACIONES DE DESARROLLO')
   console.log('-'.repeat(40))
   console.log(sections.potential)
 
-  console.log('\n12. NOTA DE USO')
+  console.log('\n11. NOTA DE USO')
   console.log('-'.repeat(40))
   console.log(
     'Este informe describe el estilo conductual de la persona evaluada y no mide habilidades, ' +

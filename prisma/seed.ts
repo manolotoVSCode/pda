@@ -101,48 +101,6 @@ async function main() {
     })
   }
 
-  const commDims: Array<{ id: string; dimension: Dimension; content: string }> = [
-    { id: 'comm-D', dimension: 'D', content: 'Es directo y orientado a resultados. Prioriza la brevedad sobre el detalle, va a la conclusión antes que al proceso, y espera el mismo nivel de concreción de quienes lo rodean.' },
-    { id: 'comm-I', dimension: 'I', content: 'Es expresivo y orientado a las personas. Usa el entusiasmo y la persuasión para conectar con su interlocutor, y tiende a dar contexto emocional antes que datos duros.' },
-    { id: 'comm-S', dimension: 'S', content: 'Es calmado y receptivo. Escucha antes de responder, evita la confrontación directa, y busca construir acuerdo antes que imponer una postura.' },
-    { id: 'comm-C', dimension: 'C', content: 'Es preciso y basado en datos. Prefiere la evidencia sobre la opinión, estructura sus mensajes con cuidado, y puede parecer reservado en contextos informales.' },
-  ]
-  for (const c of commDims) {
-    await prisma.narrativeContent.upsert({
-      where: { id: c.id },
-      update: {},
-      create: { id: c.id, section: 'COMMUNICATION', dimension: c.dimension, content: c.content },
-    })
-  }
-
-  const motivDims: Array<{ id: string; dimension: Dimension; content: string }> = [
-    { id: 'motiv-D', dimension: 'D', content: 'se motiva con la autoridad, el reto y el control sobre el resultado de su trabajo; se desmotiva con la rutina, la falta de autonomía y los procesos lentos de decisión.' },
-    { id: 'motiv-I', dimension: 'I', content: 'se motiva con el reconocimiento público, la interacción social y la variedad de proyectos; se desmotiva con el trabajo aislado, la falta de retroalimentación y las tareas repetitivas de bajo contacto humano.' },
-    { id: 'motiv-S', dimension: 'S', content: 'se motiva con la estabilidad, un entorno predecible y relaciones de confianza sostenidas en el tiempo; se desmotiva con los cambios abruptos, la presión de tiempo constante y los conflictos interpersonales no resueltos.' },
-    { id: 'motiv-C', dimension: 'C', content: 'se motiva con la claridad de reglas, la calidad del resultado y el reconocimiento a la precisión de su trabajo; se desmotiva con la ambigüedad, las decisiones apresuradas y la falta de información antes de actuar.' },
-  ]
-  for (const m of motivDims) {
-    await prisma.narrativeContent.upsert({
-      where: { id: m.id },
-      update: {},
-      create: { id: m.id, section: 'MOTIVATORS', dimension: m.dimension, content: m.content },
-    })
-  }
-
-  const pressureDims: Array<{ id: string; dimension: Dimension; content: string }> = [
-    { id: 'pressure-D', dimension: 'D', content: 'acelera la toma de decisiones y asume el control de la situación, incluso a costa de pasar por alto la opinión de otros, y puede volverse confrontativo si percibe que el ritmo no es suficiente.' },
-    { id: 'pressure-I', dimension: 'I', content: 'busca apoyo social y puede volverse más verbal e impulsivo en sus reacciones, externalizando la tensión al hablar de ella antes que procesarla en silencio.' },
-    { id: 'pressure-S', dimension: 'S', content: 'tiende a replegarse y a evitar el conflicto abierto, lo que puede leerse externamente como pasividad aunque internamente esté procesando la situación, y necesita tiempo antes de reaccionar.' },
-    { id: 'pressure-C', dimension: 'C', content: 'se refugia en el análisis y los datos, lo que puede retrasar la acción si la situación exige una respuesta rápida sin toda la información disponible.' },
-  ]
-  for (const p of pressureDims) {
-    await prisma.narrativeContent.upsert({
-      where: { id: p.id },
-      update: {},
-      create: { id: p.id, section: 'PRESSURE', dimension: p.dimension, content: p.content },
-    })
-  }
-
   const alertDims: Array<{ id: string; dimension: Dimension; content: string }> = [
     { id: 'alert-D', dimension: 'D', content: 'podría evitar tomar decisiones difíciles o asumir responsabilidad directa en situaciones de conflicto, prefiriendo que otros tomen la iniciativa.' },
     { id: 'alert-I', dimension: 'I', content: 'podría tener dificultad para generar entusiasmo o adhesión espontánea en un equipo, y podría percibirse como distante en contextos que requieren cercanía social.' },

@@ -41,6 +41,7 @@ enum NarrativeSection {
   INTENSITY
   GAP_ANALYSIS
   POTENTIAL
+  PROFILE_DESCRIPTION
 }
 
 enum IntensityLevel {

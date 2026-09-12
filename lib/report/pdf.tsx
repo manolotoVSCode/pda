@@ -163,20 +163,14 @@ export function ReportDocument(props: Props) {
           </View>
         ))}
 
-        {/* 6. Comunicación */}
-        <Text style={s.sectionTitle}>6. Estilo de Comunicación</Text>
-        <Text style={s.body}>{sections.communication}</Text>
+        {/* 6. Descripción del Perfil */}
+        <Text style={s.sectionTitle}>6. Descripción del Perfil</Text>
+        {sections.profileDescription.split('\n\n').map((para, i) => (
+          <Text key={i} style={{ ...s.body, marginBottom: 8 }}>{para}</Text>
+        ))}
 
-        {/* 7. Motivadores */}
-        <Text style={s.sectionTitle}>7. Motivadores y Desmotivadores</Text>
-        <Text style={s.body}>{sections.motivators}</Text>
-
-        {/* 8. Presión */}
-        <Text style={s.sectionTitle}>8. Comportamiento bajo Presión</Text>
-        <Text style={s.body}>{sections.pressure}</Text>
-
-        {/* 9. Alertas */}
-        <Text style={s.sectionTitle}>9. Señales de Alerta</Text>
+        {/* 7. Señales de Alerta */}
+        <Text style={s.sectionTitle}>7. Señales de Alerta</Text>
         <Text style={s.body}>{sections.alerts}</Text>
         {maskIndex > 40 ? (
           <View style={s.maskAlert}>
@@ -188,25 +182,25 @@ export function ReportDocument(props: Props) {
           </View>
         )}
 
-        {/* 10. Preguntas de profundización */}
-        <Text style={s.sectionTitle}>10. Preguntas de Profundización</Text>
+        {/* 8. Preguntas de profundización */}
+        <Text style={s.sectionTitle}>8. Preguntas de Profundización</Text>
         {sections.interviewQuestions.map((q, i) => (
           <View key={i} style={s.qItem}>
             <Text style={s.qBullet}>{i + 1}. {q}</Text>
           </View>
         ))}
 
-        {/* 11. Potencial */}
-        <Text style={s.sectionTitle}>11. Potencial y Recomendaciones de Desarrollo</Text>
+        {/* 9. Potencial */}
+        <Text style={s.sectionTitle}>9. Potencial y Recomendaciones de Desarrollo</Text>
         <Text style={s.body}>{sections.potential}</Text>
 
-        {/* 12. Tendencias de comportamiento */}
-        <Text style={s.sectionTitle}>12. Tendencias de Comportamiento</Text>
+        {/* 10. Tendencias de comportamiento */}
+        <Text style={s.sectionTitle}>10. Tendencias de Comportamiento</Text>
         {/* eslint-disable-next-line jsx-a11y/alt-text -- Image es de @react-pdf/renderer */}
         <Image style={{ ...s.chart, width: 420, height: 250 }} src={svgToDataUri(tendenciasChartSvg)} />
 
-        {/* 13. Nota de uso */}
-        <Text style={s.sectionTitle}>13. Nota de Uso</Text>
+        {/* 11. Nota de uso */}
+        <Text style={s.sectionTitle}>11. Nota de Uso</Text>
         <Text style={s.note}>
           Este informe describe el estilo conductual de la persona evaluada y no mide habilidades, conocimientos ni garantiza desempeño en ningún contexto específico. El instrumento está basado en la teoría pública DISC (Marston, 1928) y representa una arquitectura de trabajo no validada psicométricamente. Los resultados deben interpretarse como orientación y complementarse con otras fuentes de información.
         </Text>
