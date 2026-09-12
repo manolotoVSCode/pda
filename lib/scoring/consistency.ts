@@ -16,7 +16,8 @@ export function computeConsistency(
   for (const { controlKey, mainKey } of CONTROL_PAIRS) {
     if (markedKeys.has(controlKey) !== markedKeys.has(mainKey)) contradictions++
   }
-  const rawConsistency = (1 - contradictions / 4) * 100
+  const n = CONTROL_PAIRS.length
+  const rawConsistency = (1 - contradictions / n) * 100
   const consistencyIndex = rawConsistency
   const level: 'HIGH' | 'MODERATE' | 'LOW' =
     consistencyIndex >= 75 ? 'HIGH' :

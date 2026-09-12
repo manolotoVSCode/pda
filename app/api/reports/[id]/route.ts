@@ -7,6 +7,7 @@ import { computeAllScores } from '@/lib/scoring'
 import { selectInterviewQuestions } from '@/lib/report/questions'
 import { buildReportSections, type NarrativeRow } from '@/lib/report/narrative'
 import type { WordSelectionInput, LexiconEntry } from '@/lib/scoring/types'
+import { createHash } from 'crypto'
 
 export async function POST(
   _req: Request,
@@ -27,13 +28,22 @@ export async function POST(
     return NextResponse.json({ error: 'Assessment not completed' }, { status: 422 })
   }
 
-  // Load lexicon
+  // Load lexicon and compute a stable version fingerprint
   const lexiconRows = await db.lexiconTerm.findMany({ where: { active: true } })
   const lexicon: LexiconEntry[] = lexiconRows.map(r => ({
     dimension: r.dimension as 'D' | 'I' | 'S' | 'C',
     term: r.term,
     weight: r.weight,
   }))
+  const lexiconVersion = createHash('sha256')
+    .update(
+      lexiconRows
+        .map(r => `${r.dimension}:${r.term}:${r.weight}`)
+        .sort()
+        .join('\n')
+    )
+    .digest('hex')
+    .slice(0, 8)
 
   // Build scoring input
   const block1Responses: WordSelectionInput[] = assessment.blockResponses
@@ -87,7 +97,7 @@ export async function POST(
   )
   sections.interviewQuestions = interviewQuestions
 
-  // Upsert report (fitScore, projectionScore, riskLevel stored as null)
+  // Upsert report
   const report = await db.report.upsert({
     where: { assessmentId },
     update: {
@@ -99,6 +109,7 @@ export async function POST(
       consistencyIndex: scores.consistencyIndex,
       consistencyLevel: scores.consistencyLevel,
       contradictions: scores.contradictions,
+      lexiconVersion,
       fitScore: null,
       projectionScore: null,
       riskLevel: null,
@@ -113,6 +124,7 @@ export async function POST(
       consistencyIndex: scores.consistencyIndex,
       consistencyLevel: scores.consistencyLevel,
       contradictions: scores.contradictions,
+      lexiconVersion,
       fitScore: null,
       projectionScore: null,
       riskLevel: null,

@@ -15,11 +15,29 @@ const prisma = new PrismaClient({ adapter })
 const B1_KEYS = ['D1','D2','D3','D4','D5','D6','I1','S1']
 const B2_KEYS = ['D1','D2','D3','D4','D5','D6','I1','S1']
 
+// 12 control decisions — 3 per dimension
+// B2 main contains: D1 D2 D3 D4 D5 D6 I1 S1
+// Designed contradictions (3 total → rawConsistency=75, HIGH boundary):
+//   ctrl_D4=No  + D4 in B2 main → contradiction
+//   ctrl_S=No   + S1 in B2 main → contradiction
+//   ctrl_I2=Yes + I2 NOT in B2  → contradiction
 const CONTROL_DECISIONS: { wordKey: string; selected: boolean }[] = [
-  { wordKey: 'ctrl_D', selected: true },   // D1 in B2 → consistent
-  { wordKey: 'ctrl_I', selected: true },   // I1 in B2 → consistent
-  { wordKey: 'ctrl_S', selected: false },  // S1 in B2, ctrl_S No → contradiction
-  { wordKey: 'ctrl_C', selected: false },  // C1 not in B2, ctrl_C No → consistent
+  // D (Iniciativa)
+  { wordKey: 'ctrl_D',  selected: true  }, // D1 in B2 → consistent
+  { wordKey: 'ctrl_D2', selected: true  }, // D2 in B2 → consistent
+  { wordKey: 'ctrl_D4', selected: false }, // D4 in B2, ctrl_D4 No → CONTRADICTION
+  // I (Vínculo)
+  { wordKey: 'ctrl_I',  selected: true  }, // I1 in B2 → consistent
+  { wordKey: 'ctrl_I2', selected: true  }, // I2 NOT in B2, ctrl_I2 Yes → CONTRADICTION
+  { wordKey: 'ctrl_I3', selected: false }, // I3 not in B2, ctrl_I3 No → consistent
+  // S (Cadencia)
+  { wordKey: 'ctrl_S',  selected: false }, // S1 in B2, ctrl_S No → CONTRADICTION
+  { wordKey: 'ctrl_S3', selected: false }, // S3 not in B2 → consistent
+  { wordKey: 'ctrl_S4', selected: false }, // S4 not in B2 → consistent
+  // C (Precisión)
+  { wordKey: 'ctrl_C',  selected: false }, // C1 not in B2 → consistent
+  { wordKey: 'ctrl_C4', selected: false }, // C4 not in B2 → consistent
+  { wordKey: 'ctrl_C5', selected: false }, // C5 not in B2 → consistent
 ]
 
 const BLOCK1: WordSelectionInput[] = B1_KEYS.map(key => {
@@ -181,8 +199,8 @@ async function main() {
     ['candidateName incluye apellido', candidateName.includes('Prueba')],
     ['PP.D=100 (6/6 D en B1)', Math.abs(scores.pp.D - 100) < 0.01],
     ['PI.D=100 (6/6 D en B2 main)', Math.abs(scores.pi.D - 100) < 0.01],
-    ['contradictions=1 (ctrl_S/S1 discordante, ctrl_D/D1 y ctrl_I/I1 coincidentes)', scores.contradictions === 1],
-    ['consistencyLevel=HIGH (1 contradicción → rawConsistency=75)', scores.consistencyLevel === 'HIGH'],
+    ['contradictions=3 (ctrl_D4+D4, ctrl_I2+I2, ctrl_S+S1 → rawConsistency=75 exacto)', scores.contradictions === 3],
+    ['consistencyLevel=HIGH (3 contradicciones, umbral exacto 75%)', scores.consistencyLevel === 'HIGH'],
     ['dominantTraits tiene 4 entradas', sections.dominantTraits.length === 4],
     ['dominantTraits ordenados por distancia desc', sections.dominantTraits[0].distance >= sections.dominantTraits[1].distance],
     ['potential contiene nombre', sections.potential.includes('Ana')],

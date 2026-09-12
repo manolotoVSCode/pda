@@ -1,6 +1,8 @@
 import type { DimensionVector } from './types'
 
-const MAX_DISTANCE = 200
+// Real maximum euclidean distance achievable under 8-word budget constraint
+// (verified by enumeration: max occurs at 6D+2I vs 6S+2C → √22222.22 ≈ 149.0712)
+const MAX_DISTANCE = 149.0712
 
 export function euclidean(a: DimensionVector, b: DimensionVector): number {
   return Math.sqrt(

@@ -35,10 +35,14 @@ function resolveCanonical(token: string, terms: Set<string>): string | null {
   return null
 }
 
+// Returns null when no lexicon terms were matched (PT undefined).
+// When defined: PT[dim] = (4/3) × 100 × rawScore[dim] / sum(rawScores).
+// This relative normalization keeps PT on the same aggregate scale as PP and PI
+// (both of which also sum to 133.33 for any 8-word selection).
 export function computeTextualProfile(
   text: string,
   lexicon: LexiconEntry[]
-): DimensionVector {
+): DimensionVector | null {
   const tokens = normalizeText(text).split(/\s+/).filter(Boolean)
 
   const weightByDim: Record<Dimension, Map<string, number>> = {
@@ -53,13 +57,6 @@ export function computeTextualProfile(
     I: new Set(weightByDim.I.keys()),
     S: new Set(weightByDim.S.keys()),
     C: new Set(weightByDim.C.keys()),
-  }
-
-  const denominator: Record<Dimension, number> = {
-    D: 0, I: 0, S: 0, C: 0,
-  }
-  for (const entry of lexicon) {
-    denominator[entry.dimension] += entry.weight
   }
 
   const matched: Record<Dimension, Set<string>> = {
@@ -77,10 +74,10 @@ export function computeTextualProfile(
     }
   }
 
+  const totalSum = DIMS.reduce((s, d) => s + rawScore[d], 0)
+  if (totalSum === 0) return null
+
   return Object.fromEntries(
-    DIMS.map(d => [
-      d,
-      denominator[d] === 0 ? 0 : (rawScore[d] / denominator[d]) * 100,
-    ])
+    DIMS.map(d => [d, (4 / 3) * 100 * rawScore[d] / totalSum])
   ) as DimensionVector
 }

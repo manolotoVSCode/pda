@@ -147,6 +147,7 @@ model Report {
   fitScore         Float?
   projectionScore  Float?
   riskLevel        RiskLevel?
+  lexiconVersion   String?
   pdfUrl           String?
   generatedAt      DateTime         @default(now())
 }

@@ -30,6 +30,7 @@ export interface ScoringResult {
   pp: DimensionVector
   pi: DimensionVector
   pt: DimensionVector
+  ptDefined: boolean
   pc: DimensionVector
   maskIndex: number
   consistencyIndex: number

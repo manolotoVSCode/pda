@@ -32,14 +32,26 @@ export const MAIN_WORDS: InstrumentWord[] = [
   { key: 'C3', text: 'Cauteloso',    dim: 'C', isControl: false },
   { key: 'C4', text: 'Ordenado',     dim: 'C', isControl: false },
   { key: 'C5', text: 'Riguroso',     dim: 'C', isControl: false },
-  { key: 'C6', text: 'Reservado',    dim: 'C', isControl: false },
+  { key: 'C6', text: 'Preciso',      dim: 'C', isControl: false },
 ]
 
 export const CONTROL_WORDS: InstrumentWord[] = [
-  { key: 'ctrl_D', text: 'Resuelto',   dim: 'D', isControl: true, pairKey: 'D1' },
-  { key: 'ctrl_I', text: 'Amigable',   dim: 'I', isControl: true, pairKey: 'I1' },
-  { key: 'ctrl_S', text: 'Sosegado',   dim: 'S', isControl: true, pairKey: 'S1' },
-  { key: 'ctrl_C', text: 'Detallista', dim: 'C', isControl: true, pairKey: 'C1' },
+  // D — Iniciativa (3 pairs)
+  { key: 'ctrl_D',  text: 'Resuelto',    dim: 'D', isControl: true, pairKey: 'D1' },
+  { key: 'ctrl_D2', text: 'Franco',      dim: 'D', isControl: true, pairKey: 'D2' },
+  { key: 'ctrl_D4', text: 'Demandante',  dim: 'D', isControl: true, pairKey: 'D4' },
+  // I — Vínculo (3 pairs)
+  { key: 'ctrl_I',  text: 'Amigable',   dim: 'I', isControl: true, pairKey: 'I1' },
+  { key: 'ctrl_I2', text: 'Animado',    dim: 'I', isControl: true, pairKey: 'I2' },
+  { key: 'ctrl_I3', text: 'Convincente',dim: 'I', isControl: true, pairKey: 'I3' },
+  // S — Cadencia (3 pairs)
+  { key: 'ctrl_S',  text: 'Sosegado',   dim: 'S', isControl: true, pairKey: 'S1' },
+  { key: 'ctrl_S3', text: 'Cooperativo',dim: 'S', isControl: true, pairKey: 'S3' },
+  { key: 'ctrl_S4', text: 'Fiel',       dim: 'S', isControl: true, pairKey: 'S4' },
+  // C — Precisión (3 pairs)
+  { key: 'ctrl_C',  text: 'Detallista', dim: 'C', isControl: true, pairKey: 'C1' },
+  { key: 'ctrl_C4', text: 'Organizado', dim: 'C', isControl: true, pairKey: 'C4' },
+  { key: 'ctrl_C5', text: 'Minucioso',  dim: 'C', isControl: true, pairKey: 'C5' },
 ]
 
 export const MAIN_KEYS = new Set(MAIN_WORDS.map(w => w.key))
@@ -75,7 +87,7 @@ export const BLOCK2_DISPLAY: InstrumentWord[] = [
   MAIN_WORDS[10], // I5 Optimista
   MAIN_WORDS[22], // C5 Riguroso
   MAIN_WORDS[11], // I6 Comunicativo
-  MAIN_WORDS[23], // C6 Reservado
+  MAIN_WORDS[23], // C6 Preciso
   MAIN_WORDS[17], // S6 Conciliador
   MAIN_WORDS[5],  // D6 Audaz
 ]
