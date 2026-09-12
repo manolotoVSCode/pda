@@ -2,6 +2,7 @@ import { db } from '@/lib/db'
 import { notFound } from 'next/navigation'
 import Link from 'next/link'
 import { GenerateReportButton } from './GenerateReportButton'
+import { CopyLinkButton } from './CopyLinkButton'
 
 const STATUS_LABELS: Record<string, string> = {
   PENDING: 'Pendiente',
@@ -74,6 +75,7 @@ export default async function AssessmentDetailPage({ params }: { params: { id: s
             ? `Enlace compartido con ${displayName}.`
             : 'Comparte este enlace para iniciar la evaluación.'}
         </p>
+        <CopyLinkButton url={evalUrl} />
       </div>
 
       {assessment.status === 'COMPLETED' && !assessment.report && (

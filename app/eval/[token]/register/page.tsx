@@ -1,7 +1,6 @@
 'use client'
 import { useState } from 'react'
 import { useRouter, useParams } from 'next/navigation'
-import Image from 'next/image'
 
 export default function RegisterPage() {
   const params = useParams<{ token: string }>()
@@ -45,18 +44,8 @@ export default function RegisterPage() {
   const labelClass = 'block text-sm font-medium text-slate-700 mb-1'
 
   return (
-    <main className="min-h-screen bg-slate-50 flex items-center justify-center p-4">
-      <div className="bg-white rounded-xl shadow-sm border border-slate-200 p-8 w-full max-w-md">
-        <div className="flex justify-center mb-6">
-          <Image
-            src="/logo-ackermann.png"
-            alt="Ackermann International"
-            width={160}
-            height={48}
-            priority
-          />
-        </div>
-        <h1 className="text-xl font-semibold text-slate-800 mb-2">Antes de comenzar</h1>
+    <div className="bg-white rounded-xl shadow-sm border border-slate-200 p-8 w-full max-w-md mx-auto">
+      <h1 className="text-xl font-semibold text-slate-800 mb-2">Antes de comenzar</h1>
         <p className="text-sm text-slate-500 mb-6">
           Por favor completa tus datos para continuar con la evaluación.
         </p>
@@ -175,7 +164,6 @@ export default function RegisterPage() {
             {saving ? 'Registrando...' : 'Comenzar evaluación'}
           </button>
         </form>
-      </div>
-    </main>
+    </div>
   )
 }

@@ -1,6 +1,5 @@
 import { db } from '@/lib/db'
 import { notFound } from 'next/navigation'
-import Image from 'next/image'
 import Link from 'next/link'
 
 export default async function IntroPage({
@@ -16,15 +15,7 @@ export default async function IntroPage({
   if (!assessment) notFound()
 
   return (
-    <div className="flex flex-col items-center justify-center min-h-[70vh] text-center px-4">
-      <Image
-        src="/logo-ackermann.png"
-        alt="Ackermann International"
-        width={200}
-        height={60}
-        priority
-        className="mb-10"
-      />
+    <div className="flex flex-col items-center justify-center min-h-[60vh] text-center px-4">
       <div className="max-w-md">
         <h1 className="text-xl font-semibold text-slate-800 mb-4">
           Evaluación de perfil conductual
