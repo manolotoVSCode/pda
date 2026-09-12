@@ -1,5 +1,6 @@
 import type { DimensionVector } from '../scoring/types'
 import type { NarrativeRow } from './narrative'
+import { NEUTRAL_POINT } from '../scoring/center'
 
 type Dimension = 'D' | 'I' | 'S' | 'C'
 
@@ -12,8 +13,8 @@ export function selectInterviewQuestions(
   const ranked = TIE_ORDER
     .map(dim => ({
       dim,
-      distance: Math.abs(pc[dim] - 50),
-      direction: pc[dim] >= 50 ? 'excess' : 'deficit',
+      distance: Math.abs(pc[dim] - NEUTRAL_POINT),
+      direction: pc[dim] >= NEUTRAL_POINT ? 'excess' : 'deficit',
     }))
     .sort((a, b) => {
       const diff = b.distance - a.distance
@@ -22,9 +23,10 @@ export function selectInterviewQuestions(
       return TIE_ORDER.indexOf(a.dim) - TIE_ORDER.indexOf(b.dim)
     })
 
-  // Select top 2; add 3rd if within 5 pts of 2nd (max 6 questions total)
+  // Select top 2; add 3rd if within 10/3 pts of 2nd (max 6 questions total).
+  // Threshold scaled proportionally from the old 5-point value (neutral=50 → neutral=100/3).
   const selected = ranked.slice(0, 2)
-  if (ranked.length > 2 && ranked[2].distance >= ranked[1].distance - 5) {
+  if (ranked.length > 2 && ranked[2].distance >= ranked[1].distance - 10 / 3) {
     selected.push(ranked[2])
   }
 

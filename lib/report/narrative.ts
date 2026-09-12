@@ -1,5 +1,5 @@
 import type { DimensionVector } from '../scoring/types'
-import { computeDistanceToCenter } from '../scoring/center'
+import { computeDistanceToCenter, NEUTRAL_POINT } from '../scoring/center'
 
 type Dimension = 'D' | 'I' | 'S' | 'C'
 
@@ -43,8 +43,10 @@ export const DIM_LABELS: Record<Dimension, string> = {
 export const DIMS: Dimension[] = ['D', 'I', 'S', 'C']
 const TIE_ORDER = DIMS
 
-// §3.7 threshold: distance < 5 → emit neutral phrase instead of directional paragraph
-const NEUTRAL_THRESHOLD = 5
+// §3.7 threshold: distance < 10/3 → emit neutral phrase instead of directional paragraph.
+// Proportionally scaled from the old 5-point threshold (calibrated at neutral=50):
+// 5 × (100/3) / 50 = 10/3 ≈ 3.33 points.
+const NEUTRAL_THRESHOLD = 10 / 3
 
 // §5.1 / Análisis de rasgos dominantes: neutral text for near-center dimensions
 const NEUTRAL_TRAIT_TEXT = 'Esta dimensión se ubica cerca del punto neutro de la escala, sin una tendencia marcada en ninguna dirección.'
@@ -114,7 +116,7 @@ export function buildReportSections(
   // §5.1 / §5.3: build one paragraph per dimension in sorted order
   const profileParas: string[] = sortedDims.map(({ dim, distance }) => {
     if (distance < NEUTRAL_THRESHOLD) return neutralProfileText(dim)
-    const subtype = pc[dim] >= 50 ? 'high' : 'low'
+    const subtype = pc[dim] >= NEUTRAL_POINT ? 'high' : 'low'
     const row = findRow(rows, 'PROFILE_DESCRIPTION', { dimension: dim, subtype })
     return row?.content ?? neutralProfileText(dim)
   })
@@ -137,7 +139,7 @@ export function buildReportSections(
 
   // Dominant traits: sorted by distance to center, descending
   const dominantTraits: TraitEntry[] = sortedDims.map(({ dim, distance }) => {
-    const direction: 'excess' | 'deficit' = pc[dim] >= 50 ? 'excess' : 'deficit'
+    const direction: 'excess' | 'deficit' = pc[dim] >= NEUTRAL_POINT ? 'excess' : 'deficit'
     const text = distance >= NEUTRAL_THRESHOLD
       ? buildTraitText(rows, dim, distance, direction)
       : NEUTRAL_TRAIT_TEXT
