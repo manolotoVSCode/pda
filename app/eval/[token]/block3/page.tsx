@@ -15,9 +15,9 @@ export default function Block3Page({ params }: Props) {
   const router = useRouter()
 
   const wordCount = countWords(text)
-  const tooFew = wordCount < 40
-  const tooMany = wordCount > 80
-  const valid = wordCount >= 40 && wordCount <= 80
+  const tooFew = wordCount < 60
+  const tooMany = wordCount > 120
+  const valid = wordCount >= 60 && wordCount <= 120
 
   async function handleSubmit() {
     if (!valid || submitting) return
@@ -50,7 +50,7 @@ export default function Block3Page({ params }: Props) {
 
       <p className="text-sm text-slate-600 bg-slate-100 rounded-xl p-4 leading-relaxed">
         Describe brevemente cómo eres en cuanto a tu manera de relacionarte y trabajar.
-        Escribe <strong>entre 40 y 80 palabras</strong>, en primera persona y con naturalidad.
+        Escribe <strong>entre 60 y 120 palabras</strong>, en primera persona y con naturalidad.
       </p>
 
       <textarea
@@ -66,8 +66,8 @@ export default function Block3Page({ params }: Props) {
           tooMany ? 'text-rose-500' : tooFew ? 'text-slate-400' : 'text-emerald-600'
         }`}>
           {wordCount} {wordCount === 1 ? 'palabra' : 'palabras'}
-          {tooFew && wordCount > 0 && ` — mínimo 40`}
-          {tooMany && ` — máximo 80`}
+          {tooFew && wordCount > 0 && ` — mínimo 60`}
+          {tooMany && ` — máximo 120`}
         </span>
 
         <button

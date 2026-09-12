@@ -74,8 +74,15 @@ export function computeTextualProfile(
     }
   }
 
+  // Minimum activation threshold: fewer than 3 distinct matched terms across all
+  // dimensions is insufficient signal — a single matched word can shift one dimension
+  // by 10–20 points while leaving the others at zero, producing more noise than
+  // information. Below this threshold PT is treated as undefined, same code path as
+  // when no terms match at all.
+  const totalMatches = DIMS.reduce((s, d) => s + matched[d].size, 0)
+  if (totalMatches < 3) return null
+
   const totalSum = DIMS.reduce((s, d) => s + rawScore[d], 0)
-  if (totalSum === 0) return null
 
   return Object.fromEntries(
     DIMS.map(d => [d, (4 / 3) * 100 * rawScore[d] / totalSum])

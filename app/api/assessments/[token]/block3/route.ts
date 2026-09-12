@@ -16,9 +16,9 @@ export async function PATCH(
   }
 
   const wordCount = countWords(text)
-  if (wordCount < 40 || wordCount > 80) {
+  if (wordCount < 60 || wordCount > 120) {
     return NextResponse.json(
-      { error: `El texto debe tener entre 40 y 80 palabras. Tiene ${wordCount}.` },
+      { error: `El texto debe tener entre 60 y 120 palabras. Tiene ${wordCount}.` },
       { status: 400 }
     )
   }
