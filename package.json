@@ -4,7 +4,7 @@
   "private": true,
   "scripts": {
     "dev": "next dev",
-    "build": "prisma generate --config prisma7.config.ts && next build",
+    "build": "next build",
     "start": "next start -p $PORT",
     "lint": "next lint",
     "test": "vitest run",
