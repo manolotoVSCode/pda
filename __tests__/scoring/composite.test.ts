@@ -35,6 +35,41 @@ describe('computeComposite — PT defined', () => {
   })
 })
 
+describe('computeComposite — clamping [0, 100]', () => {
+  // PT can reach 133.33 when text concentrates all weight in one dimension.
+  // Without clamping, PI=100 + PP=100 + PT=133.33 → PC = 60+25+20 = 105.
+  // The clamp ensures PC ∈ [0, 100] for all valid inputs.
+  const pt133: DimensionVector = { D: 400 / 3, I: 0, S: 0, C: 0 } // ≈ 133.33
+
+  it('PT=133.33, PI=100, PP=100 → PC clamped to 100 (would be 105 without clamp)', () => {
+    expect(computeComposite(v100, v100, pt133).D).toBe(100)
+  })
+  it('PT=133.33, PI=100, PP=0 → 60 + 0 + 20 = 80 (no clamp needed)', () => {
+    expect(computeComposite(v100, v0, pt133).D).toBeCloseTo(80, 8)
+  })
+  it('PT=133.33, PI=0, PP=0 → 0 + 0 + 133.33×0.15 = 20 (no clamp needed)', () => {
+    expect(computeComposite(v0, v0, pt133).D).toBeCloseTo(20, 8)
+  })
+  it('PC never exceeds 100 for any valid budget input (PT-defined path)', () => {
+    // Worst case: PI=100, PP=100, PT=133.33 in any dimension
+    const extremePt: DimensionVector = { D: 400 / 3, I: 400 / 3, S: 400 / 3, C: 400 / 3 }
+    const r = computeComposite(v100, v100, extremePt)
+    expect(r.D).toBeLessThanOrEqual(100)
+    expect(r.I).toBeLessThanOrEqual(100)
+    expect(r.S).toBeLessThanOrEqual(100)
+    expect(r.C).toBeLessThanOrEqual(100)
+  })
+  it('PC never falls below 0 for any valid input', () => {
+    expect(computeComposite(v0, v0, v0).D).toBe(0)
+    expect(computeComposite(v0, v0, null).D).toBe(0)
+  })
+  it('PC never exceeds 100 for the null-PT path', () => {
+    // Max null-PT case: PI=100, PP=100 → 100×(12/17) + 100×(5/17) = 100
+    const r = computeComposite(v100, v100, null)
+    expect(r.D).toBeLessThanOrEqual(100)
+  })
+})
+
 describe('computeComposite — PT undefined (null)', () => {
   it('PI=100, PP=0, null PT → 100 × (12/17) ≈ 70.59', () =>
     expect(computeComposite(v100, v0, null).D).toBeCloseTo(100 * 12 / 17, 8))

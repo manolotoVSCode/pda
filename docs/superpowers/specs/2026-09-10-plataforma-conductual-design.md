@@ -385,10 +385,18 @@ rawScore[dim] = Σ (+1 si mostDim === dim) + Σ (−1 si leastDim === dim)
 ### 5.4 Perfil Compuesto (`composite.ts`)
 
 ```
-PC[dim] = (PI[dim] × 0.60) + (PP[dim] × 0.25) + (PT[dim] × 0.15)
+PC[dim] = clamp(PI[dim]×0.60 + PP[dim]×0.25 + PT[dim]×0.15, 0, 100)
 ```
 
-Aplicado a cada una de las cuatro dimensiones. Sin redondeo en este paso.
+Cuando PT está indefinido (texto sin coincidencias léxicas), los pesos se redistribuyen proporcionalmente y se aplica el mismo límite:
+
+```
+PC[dim] = clamp(PI[dim]×(12/17) + PP[dim]×(5/17), 0, 100)
+```
+
+**Por qué es necesario el límite:** PP y PI están acotados en [0, 100] por dimensión (cupo fijo de 8 palabras, máximo 6 por dimensión). PT no está acotado de la misma forma: la normalización relativa `PT[dim] = (4/3)×100×raw[dim]/Σraw` puede alcanzar 133.33 cuando todo el peso léxico del texto se concentra en una sola dimensión. Sin el límite, combinar PI=100 + PP=100 + PT=133.33 produce PC = 60+25+20 = 105, rompiendo la escala [0, 100] que usan la distancia al centro, el gráfico de barras y las barras de Tendencias.
+
+**Convención de almacenamiento — PT indefinido:** cuando `computeTextualProfile` retorna `null` (texto sin coincidencias léxicas), los campos `ptD/ptI/ptS/ptC` del modelo `Report` se almacenan como `0.0`. Esto es una convención de representación, **no un resultado de la normalización relativa**: la normalización relativa no puede producir (0, 0, 0, 0) porque, si hay cualquier coincidencia léxica, la suma Σraw > 0 garantiza que al menos una dimensión es positiva. Por lo tanto, `ptD=ptI=ptS=ptC=0.0` en la base de datos significa exclusivamente "texto sin coincidencias", y puede ser interpretado como PT indefinido sin ambigüedad. El campo `ptDefined` en `ScoringResult` (runtime) registra esta distinción explícitamente en código.
 
 ### 5.5 Índice de Máscara Social (`mask.ts`)
 
