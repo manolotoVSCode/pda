@@ -159,8 +159,8 @@ export default async function ReportPage({ params }: { params: { id: string } })
       <section className="mb-6">
         <h2 className="text-lg font-semibold text-slate-700 border-b border-slate-200 pb-1 mb-3">6. Descripción del Perfil</h2>
         <div className="space-y-4">
-          {sections.profileDescription.split('\n\n').map((para, i) => (
-            <p key={i} className="text-sm text-slate-700">{para}</p>
+          {sections.profileDescription.map((item, i) => (
+            <p key={i} className="text-sm text-slate-700">{item.text}</p>
           ))}
         </div>
       </section>

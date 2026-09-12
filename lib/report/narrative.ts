@@ -22,10 +22,15 @@ export type TraitEntry = {
   text: string
 }
 
+export type ProfileParagraph = {
+  dim: Dimension
+  text: string
+}
+
 export type ReportSections = {
   consistencyWarning: string | null
   executiveSummary: string
-  profileDescription: string
+  profileDescription: ProfileParagraph[]
   alerts: string
   maskNote: string | null
   dominantTraits: TraitEntry[]
@@ -114,19 +119,15 @@ export function buildReportSections(
     })
 
   // §5.1 / §5.3: build one paragraph per dimension in sorted order
-  const profileParas: string[] = sortedDims.map(({ dim, distance }) => {
-    if (distance < NEUTRAL_THRESHOLD) return neutralProfileText(dim)
+  const profileDescription: ProfileParagraph[] = sortedDims.map(({ dim, distance }) => {
+    if (distance < NEUTRAL_THRESHOLD) return { dim, text: neutralProfileText(dim) }
     const subtype = pc[dim] >= NEUTRAL_POINT ? 'high' : 'low'
     const row = findRow(rows, 'PROFILE_DESCRIPTION', { dimension: dim, subtype })
-    return row?.content ?? neutralProfileText(dim)
+    return { dim, text: row?.content ?? neutralProfileText(dim) }
   })
 
-  // §5.1: concatenate with double newline (rendered as separate paragraphs)
-  const profileDescription = profileParas.join('\n\n')
-
   // §4 / §5.1: executive summary = first sentence of the top-distance dimension's paragraph
-  const topPara = profileParas[0] ?? ''
-  const executiveSummary = (topPara.split('.')[0] ?? '') + '.'
+  const executiveSummary = ((profileDescription[0]?.text ?? '').split('.')[0] ?? '') + '.'
 
   // Alerts
   const low = lowestDim(pc)
